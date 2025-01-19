@@ -25,42 +25,42 @@ jobs:
           git checkout -b v$NEW_MAJOR
           git tag $NEW_VERSION
           git push -u origin v$NEW_MAJOR && git push --tags
-          echo "TAG=$NEW_VERSION" >> $GITHUB_ENV
-          #- name: Setup Python 3.12.7
-          #  uses: actions/setup-python@v3
-          #  with:
-          #    python-version: "3.12.7"
-          #- name: Install Poetry 1.8.4
-          #  run: curl -sSL https://install.python-poetry.org | python3 - --version 1.8.4
-          #- name: Install Python project dependencies
-          #  run: $HOME/.local/bin/poetry install --no-root
-          #- name: Install Just 1.38.0
-          #  run: pip install rust-just==1.38.0
-          #- name: Generate documentation and schemas
-          #  run: |
-          #    just gen-all
-          #    mv docs information_model schemas /tmp/
-          #- name: Commit artifacts to `docs` branch
-          #  run: |
-          #    git config user.name "CICD"
-          #    git config user.email "cicd@netbeheernederland.nl"
-          #    git fetch
-          #    git checkout docs
-          #    if [ -d "${{ env.TAG }}" ]; then exit 1; fi
-          #    sed -i "s/version: true/version: ${{ env.TAG }}/" /tmp/docs/antora.yml
-          #    mv /tmp/docs "${{ env.TAG }}"
-          #    mv /tmp/information_model/*.schema.linkml.yaml "${{ env.TAG }}"/modules/information-model/attachments/
-          #    mv /tmp/schemas/*/* "${{ env.TAG }}"/modules/information-model/attachments/
-          #    git add "${{ env.TAG }}"
-          #    git commit -m "Added docs and schemas for ${{ env.TAG }}"
-          #    git push
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+      - name: Setup Python 3.12.7
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12.7"
+      - name: Install Poetry 1.8.4
+        run: curl -sSL https://install.python-poetry.org | python3 - --version 1.8.4
+      - name: Install Python project dependencies
+        run: $HOME/.local/bin/poetry install --no-root
+      - name: Install Just 1.38.0
+        run: pip install rust-just==1.38.0
+      - name: Generate documentation and schemas
+        run: |
+          just gen-all
+          mv docs information_model schemas /tmp/
+      - name: Commit artifacts to `docs` branch
+        run: |
+          git config user.name "CICD"
+          git config user.email "cicd@netbeheernederland.nl"
+          git fetch
+          git checkout docs
+          if [ -d "${{ env.NEW_VERSION }}" ]; then exit 1; fi
+          sed -i "s/version: true/version: ${{ env.NEW_VERSION }}/" /tmp/docs/antora.yml
+          mv /tmp/docs "${{ env.NEW_VERSION }}"
+          mv /tmp/information_model/*.schema.linkml.yaml "${{ env.NEW_VERSION }}"/modules/information-model/attachments/
+          mv /tmp/schemas/*/* "${{ env.NEW_VERSION }}"/modules/information-model/attachments/
+          git add "${{ env.NEW_VERSION }}"
+          git commit -m "Added docs and schemas for ${{ env.NEW_VERSION }}"
+          git push
       - name: Prepare release
         run: echo "New version." > release_notes.txt
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           body_path: release_notes.txt
-          tag_name: ${{ env.TAG }}
+          tag_name: ${{ env.NEW_VERSION }}
           files: |
-            ${{ env.TAG }}/modules/information-model/attachments/*.schema.linkml.yaml
-            ${{ env.TAG }}/modules/information-model/attachments/*.json_schema.json
+            ${{ env.NEW_VERSION }}/modules/information-model/attachments/*.schema.linkml.yaml
+            ${{ env.NEW_VERSION }}/modules/information-model/attachments/*.json_schema.json

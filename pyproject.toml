@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "dp_project"
+version = "0.1.0"
+description = "Template repository for an information model of a data product."
+authors = ["Ritger Teunissen <ritger.teunissen@alliander.com>", "Bart Kleijngeld <bart.kleijngeld@alliander.com>"]
+license = "Apache Software License 2.0"
+readme = "README.adoc"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+linkml = "^1.8.4"
+linkml-runtime = "^1.1.24"
+linkml-asciidoc-generator = { git = "https://github.com/Netbeheer-Nederland/linkml-antora-generator.git", tag = "v0.2" }
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"

@@ -15,18 +15,16 @@ jobs:
       - name: Tag version
         run: |
           git fetch --tags
-          LATEST_VERSION=$(git tag | grep -P '^v\d+\.\d+\.\d+$' | grep '^'"${{ github.ref_name }}" | cut -c 2- | sort -t . -k 1,1n -k 2,2n -k 3,3n | tail -1)
 
-          if [ -n $LATEST_VERSION ]; then
-            LATEST_MAJOR=$(echo $LATEST_VERSION | cut -d . -f 1)
-            LATEST_MINOR=$(echo $LATEST_VERSION | cut -d . -f 2)
-            NEW_MINOR=$(echo $LATEST_MINOR + 1 | bc)
-            NEW_VERSION="v$LATEST_MAJOR.$NEW_MINOR.0"
+          if [ -z $(git tag | grep -P '^v\d+\.\d+\.\d+$' | grep ^${{ github.ref_name }} | cut -c 2- | sort -t . -k 1,1n -k 2,2n -k 3,3n | tail -1) ]; then
+              NEW_VERSION="${{ github.ref_name }}.0.0"
           else
-            NEW_VERSION="${{ github.ref_name }}.0.0"
+              LATEST_VERSION=$(git tag | grep -P '^v\d+\.\d+\.\d+$' | grep ^${{ github.ref_name }} | cut -c 2- | sort -t . -k 1,1n -k 2,2n -k 3,3n | tail -1)
+              LATEST_MAJOR=$(echo $LATEST_VERSION | cut -d . -f 1)
+              LATEST_MINOR=$(echo $LATEST_VERSION | cut -d . -f 2)
+              NEW_MINOR=$(echo $LATEST_MINOR + 1 | bc)
+              NEW_VERSION="v$LATEST_MAJOR.$NEW_MINOR.0"
           fi
-
-          echo "$LATEST_VERSION"
 
           git config user.name "CICD"
           git config user.email "cicd@netbeheernederland.nl"

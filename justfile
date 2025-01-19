@@ -112,3 +112,12 @@ release-patch-version:
     gh workflow run release_patch_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
+
+# Preview version
+[group("vcs")]
+preview-version:
+    @echo "Generating preview of version…"
+    @echo -en "\t"
+    gh workflow run preview_release.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    @echo "… OK."
+    @echo

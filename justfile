@@ -94,3 +94,21 @@ release-major-version:
     gh workflow run release_major_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
+
+# Release new minor version
+[group("vcs")]
+release-minor-version:
+    @echo "Releasing new minor version…"
+    @echo -en "\t"
+    gh workflow run release_minor_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    @echo "… OK."
+    @echo
+
+# Release new patch version
+[group("vcs")]
+release-patch-version:
+    @echo "Releasing new patch version…"
+    @echo -en "\t"
+    gh workflow run release_patch_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    @echo "… OK."
+    @echo

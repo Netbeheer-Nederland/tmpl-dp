@@ -1,0 +1,14 @@
+= Meetdata
+
+The _Meetdata_ data product describes the metered data for a single or multiple market evaluation points (_Aansluiting_). The xref:solution-design.adoc[solution design] provides more detail on the use cases and implementation of the data product for DSOs. This data product follows the EUMED Profile, as standardised in _ISO/IEC 61968-9:2024: Interfaces for meter reading and control_. This data product aligns with the implementation by other EU Member States.
+
+.Data product
+image::dp_meetdata-20241127.svg[Data product]
+
+The data is intended to be represented as a hierarchy with a xref:information-model:class/MeterReadingDataSet.adoc[] at its root, followed by xref:information-model:class/MarketEvaluationPoint.adoc[]s nested inside the `MeterReadingDataSet`. Each `MarketEvaluationPoint` has one or more xref:information-model:class/MeterReading.adoc[]s.
+
+A `MeterReading` has one or more xref:information-model:class/IntervalBlock.adoc[]s, which defines the time period for which the xref:information-model:class/IntervalReading.adoc[]s are applicable. A xref:information-model:class/ReadingType.adoc[] defines attributes for the ``IntervalReading``s. Each `IntervalReading` can be provided a xref:information-model:class/ReadingQuality.adoc[], defining data quality for the `IntervalReading`.
+
+== Additional schemas
+
+* https://raw.githubusercontent.com/Netbeheer-Nederland/dp-meetdata/refs/heads/main/project/jsonschema/dp_meetdata.schema.json[JSON Schema]

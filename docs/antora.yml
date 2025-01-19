@@ -1,5 +1,5 @@
-name: dp-meetdata
-title: Meetdata
+name: dp-project
+title: Project
 version: true
 nav:
 - modules/ROOT/nav.adoc

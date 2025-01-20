@@ -8,7 +8,7 @@ _default:
 
 # Generate everything
 [group("generators")]
-gen-all: clean gen-json-schema gen-docs show-output
+gen-all: clean gen-json-schema gen-docs
 
 # Generate JSON Schema
 [group("generators")]
@@ -64,8 +64,10 @@ clean:
 
 # Show the contents of the output directory
 [group("general")]
-show-output:
-    @if [ -x "$(which tree)" ]; then \
+show-schemas:
+    @if [ ! -d "$DP_PROJECT_SCHEMAS_DIR" ]; then \
+        exit 0; \
+    elif [ -x "$(which tree)" ]; then \
         tree "$DP_PROJECT_SCHEMAS_DIR"; \
     else \
         find "$DP_PROJECT_SCHEMAS_DIR"; \

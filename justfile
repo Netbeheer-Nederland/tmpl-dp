@@ -123,3 +123,35 @@ preview-version:
     gh workflow run preview_release.yaml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
+
+# Add GitHub branch protection rules for documentation branches
+[group("vcs")]
+_protect-docs-branches:
+    @echo "Adding ruleset to protect documentation branches…"
+    @echo -en "\t"
+    gh api \
+        --method POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        /repos/Netbeheer-Nederland/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+        --input "scripts/protect-docs-branches-ruleset-def.json"
+    @echo "… OK."
+    @echo
+
+# Add GitHub branch protection rules for major branches
+[group("vcs")]
+_protect-major-branches:
+    @echo "Adding ruleset to protect major branches…"
+    @echo -en "\t"
+    gh api \
+        --method POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        /repos/Netbeheer-Nederland/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+        --input "scripts/protect-major-branches-ruleset-def.json"
+    @echo "… OK."
+    @echo
+
+# Add GitHub branch protection rules
+[group("vcs")]
+add-branch-protections: _protect-docs-branches _protect-major-branches

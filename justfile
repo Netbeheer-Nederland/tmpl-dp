@@ -85,8 +85,8 @@ show-schema-classes:
 
 # Show class hierarchy in information model
 [group("schema")]
-get-def uri:
-    @yq '.classes.* | select(.class_uri == "{{uri}}")' "$DP_PROJECT_SCHEMA"
+get-def curie:
+    @yq '.classes.* | select(.class_uri == "{{curie}}")' "$DP_PROJECT_SCHEMA"
 
 # Release new major version
 [group("vcs")]

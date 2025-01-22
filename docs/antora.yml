@@ -1,6 +1,0 @@
-name: dp-project
-title: Project
-version: true
-nav:
-- modules/ROOT/nav.adoc
-- modules/information-model/nav.adoc

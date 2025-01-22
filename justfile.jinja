@@ -15,78 +15,71 @@ gen-all: clean gen-json-schema gen-docs
 gen-json-schema:
     @echo "Generating JSON Schema…"
     @echo -en "\t"
-    mkdir -p "$DP_PROJECT_SCHEMAS_DIR"/json_schema
+    mkdir -p "$DP_ARTIFACTS_DIR/schemas/json_schema"
     @echo -en "\t"
     poetry run gen-json-schema \
         --not-closed \
-        "$DP_PROJECT_SCHEMA" \
-        > "$DP_PROJECT_SCHEMAS_DIR/json_schema/$DP_PROJECT_FILENAME.json_schema.json"
+        "$DP_LINKML_SCHEMA" \
+        > "$DP_ARTIFACTS_DIR/schemas/json_schema/$DP_FILENAME.json_schema.json"
     @echo -n "… "
     @echo "OK."
     @echo
-    @echo -e "Generated JSON Schema at: $DP_PROJECT_SCHEMAS_DIR/json_schema/$DP_PROJECT_FILENAME.json_schema.json"
+    @echo -e "Generated JSON Schema at: $DP_ARTIFACTS_DIR/schemas/json_schema/$DP_FILENAME.json_schema.json"
     @echo
+
+# Post-process LinkML schema for preview or releasing
+_post-process-linkml-schema:
+    mkdir -p "$DP_ARTIFACTS_DIR/information-models"
+    cp "$DP_LINKML_SCHEMA" "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
+    sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
 
 # Generate schema documentation (as an Antora module)
 [group("generators")]
-gen-docs:
+gen-docs: _post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
-    mkdir -p "$DP_PROJECT_DOCS_IM_MODULE_DIR"
+    cp -r "$DP_DOCS_DIR" "$DP_ARTIFACTS_DIR"
+    mkdir -p "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
     @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
-        "$DP_PROJECT_SCHEMA" \
-        "$DP_PROJECT_DOCS_IM_MODULE_DIR"
+        "$DP_LINKML_SCHEMA" \
+        "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
+    sed -i "s/version: true/version: $(git rev-parse --abbrev-ref HEAD)/" "$DP_ARTIFACTS_DIR/documentation/antora.yml"
+    cp "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/
+    cp "$DP_ARTIFACTS_DIR/schemas/*/*" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/
     @echo -n "… "
     @echo "OK."
     @echo
-    @echo -e "Generated documentation files at: $DP_PROJECT_DOCS_IM_MODULE_DIR"
+    @echo -e "Generated documentation files at: $DP_ARTIFACTS_DIR/documentation"
     @echo
 
 # Clean up the output directory
-[group("general")]
+[group("general"), confirm]
 clean:
     @echo "Cleaning up generated artifacts…"
-    @echo -e "\tCleaning up: $DP_PROJECT_SCHEMAS_DIR"
-    @if [ -d "$DP_PROJECT_SCHEMAS_DIR" ]; then \
-        ( shopt -s dotglob; rm -rf "$DP_PROJECT_SCHEMAS_DIR"/* ); \
+    @echo -e "\tCleaning up: $DP_ARTIFACTS_DIR"
+    @if [ -d "$DP_ARTIFACTS_DIR" ]; then \
+        rm -rf "$DP_ARTIFACTS_DIR"
     else \
-        mkdir -p "$DP_PROJECT_SCHEMAS_DIR"; \
-    fi
-    @echo -e "\tCleaning up: $DP_PROJECT_DOCS_IM_MODULE_DIR "
-    @if [ -d "$DP_PROJECT_DOCS_DIR" ]; then \
-        ( shopt -s dotglob; rm -rf "$DP_PROJECT_DOCS_IM_MODULE_DIR"/* ); \
-    else \
-        mkdir -p "$DP_PROJECT_DOCS_IM_MODULE_DIR"; \
+        mkdir -p "$DP_ARTIFACTS_DIR"; \
     fi
     @echo "… OK."
     @echo
 
-# Show the contents of the output directory
-[group("general")]
-show-schemas:
-    @if [ ! -d "$DP_PROJECT_SCHEMAS_DIR" ]; then \
-        exit 0; \
-    elif [ -x "$(which tree)" ]; then \
-        tree "$DP_PROJECT_SCHEMAS_DIR"; \
-    else \
-        find "$DP_PROJECT_SCHEMAS_DIR"; \
-    fi
-
 # Edit the information model
 [group("schema")]
 edit-schema:
-    @${VISUAL:-${EDITOR:-nano}} "$DP_PROJECT_SCHEMA"
+    @${VISUAL:-${EDITOR:-nano}} "$DP_LINKML_SCHEMA"
 
 # Show class hierarchy in information model
 [group("schema")]
 show-schema-classes:
-    yq '.classes.* | key' "$DP_PROJECT_SCHEMA"
+    yq '.classes.* | key' "$DP_LINKML_SCHEMA"
 
 # Show class hierarchy in information model
 [group("schema")]
 get-def curie:
-    @yq '.classes.* | select(.class_uri == "{{curie}}")' "$DP_PROJECT_SCHEMA"
+    @yq '.classes.* | select(.class_uri == "{{curie}}")' "$DP_LINKML_SCHEMA"
 
 # Release new major version
 [group("vcs")]
@@ -134,7 +127,7 @@ _protect-docs-branches:
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
         /repos/Netbeheer-Nederland/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-        --input "scripts/protect-docs-branches-ruleset-def.json"
+        --input "$DP_SCRIPTS_DIR/protect-docs-branches-ruleset-def.json"
     @echo "… OK."
     @echo
 
@@ -148,7 +141,7 @@ _protect-major-branches:
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
         /repos/Netbeheer-Nederland/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-        --input "scripts/protect-major-branches-ruleset-def.json"
+        --input "$DP_SCRIPTS_DIR/protect-major-branches-ruleset-def.json"
     @echo "… OK."
     @echo
 

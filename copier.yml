@@ -1,0 +1,26 @@
+_answers_file: .copier-answers.yml
+  #_tasks:
+  #- just init-project
+  #- poetry install --no-root
+
+name:
+  type: str
+  help: Name of the data product…
+  default: dp-lower-kebab-case
+title:
+  type: str
+  help: Title of the data product…
+  default: Name in Title Case
+description:
+  type: str
+  help: Describe what the data product is about…
+schema_base_uri:
+  type: str
+  help: Please provide the base URI to use for schemas…
+  default: http://data.netbeheernederland.nl/data-product
+
+#dependency_manager:
+#  type: str
+#  choices:
+#    - Poetry
+#    - uv

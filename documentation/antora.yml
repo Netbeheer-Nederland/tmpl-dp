@@ -1,0 +1,5 @@
+name: {{ name }}
+title: {{ title }}
+version: true
+nav:
+- modules/ROOT/nav.adoc

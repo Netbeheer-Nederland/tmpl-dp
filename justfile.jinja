@@ -59,7 +59,7 @@ clean:
     @echo "Cleaning up generated artifacts…"
     @echo -e "\tCleaning up: $DP_ARTIFACTS_DIR"
     @if [ -d "$DP_ARTIFACTS_DIR" ]; then \
-        rm -rf "$DP_ARTIFACTS_DIR"
+        rm -rf "$DP_ARTIFACTS_DIR" \
     else \
         mkdir -p "$DP_ARTIFACTS_DIR"; \
     fi

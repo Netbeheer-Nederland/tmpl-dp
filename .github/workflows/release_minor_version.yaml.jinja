@@ -1,4 +1,4 @@
-name: Release new patch version
+name: Release new minor version
 on:
   workflow_dispatch:
 
@@ -22,9 +22,8 @@ jobs:
               LATEST_VERSION=$(git tag | grep -P '^v\d+\.\d+\.\d+$' | grep ^${{ github.ref_name }} | cut -c 2- | sort -t . -k 1,1n -k 2,2n -k 3,3n | tail -1)
               LATEST_MAJOR=$(echo $LATEST_VERSION | cut -d . -f 1)
               LATEST_MINOR=$(echo $LATEST_VERSION | cut -d . -f 2)
-              LATEST_PATCH=$(echo $LATEST_VERSION | cut -d . -f 3)
-              NEW_PATCH=$(echo $LATEST_PATCH + 1 | bc)
-              NEW_VERSION="v$LATEST_MAJOR.$LATEST_MINOR.$NEW_PATCH"
+              NEW_MINOR=$(echo $LATEST_MINOR + 1 | bc)
+              NEW_VERSION="v$LATEST_MAJOR.$NEW_MINOR.0"
           fi
 
           git config user.name "CICD"
@@ -45,18 +44,18 @@ jobs:
       - name: Generate documentation and schemas
         run: |
           just gen-all
-          mv docs information_model schemas /tmp/
       - name: Commit artifacts to `docs` branch
         run: |
           git config user.name "CICD"
           git config user.email "cicd@netbeheernederland.nl"
           git fetch
           git checkout docs
-          if [ -d "${{ env.NEW_VERSION }}" ]; then exit 1; fi
-          sed -i "s/version: true/version: ${{ env.NEW_VERSION }}/" /tmp/docs/antora.yml
-          mv /tmp/docs "${{ env.NEW_VERSION }}"
-          mv /tmp/information_model/*.schema.linkml.yaml "${{ env.NEW_VERSION }}"/modules/information-model/attachments/
-          mv /tmp/schemas/*/* "${{ env.NEW_VERSION }}"/modules/information-model/attachments/
+
+          if [ -d "${{ env.NEW_VERSION }}" ]; then
+              exit 1
+          fi
+          mv artifacts/documentation "${{ github.ref_name }}"
+
           git add "${{ env.NEW_VERSION }}"
           git commit -m "Added docs and schemas for ${{ env.NEW_VERSION }}"
           git push

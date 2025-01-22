@@ -31,7 +31,7 @@ jobs:
           git checkout docs-dev
 
           if [ -d "${{ github.ref_name }}" ]; then
-              rm -rf "{{ github.ref_name }}";
+              rm -rf "{{ github.ref_name }}"
           fi
           mv artifacts/documentation "${{ github.ref_name }}"
 

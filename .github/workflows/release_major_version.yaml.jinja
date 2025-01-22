@@ -39,18 +39,19 @@ jobs:
       - name: Generate documentation and schemas
         run: |
           just gen-all
-          mv docs information_model schemas /tmp/
       - name: Commit artifacts to `docs` branch
         run: |
           git config user.name "CICD"
           git config user.email "cicd@netbeheernederland.nl"
           git fetch
           git checkout docs
-          if [ -d "${{ env.NEW_VERSION }}" ]; then exit 1; fi
-          sed -i "s/version: true/version: ${{ env.NEW_VERSION }}/" /tmp/docs/antora.yml
-          mv /tmp/docs "${{ env.NEW_VERSION }}"
-          mv /tmp/information_model/*.schema.linkml.yaml "${{ env.NEW_VERSION }}"/modules/information-model/attachments/
-          mv /tmp/schemas/*/* "${{ env.NEW_VERSION }}"/modules/information-model/attachments/
+
+          if [ -d "${{ env.NEW_VERSION }}" ]; then
+            exit 1
+          fi
+
+          mv artifacts/documentation "${{ github.ref_name }}"
+
           git add "${{ env.NEW_VERSION }}"
           git commit -m "Added docs and schemas for ${{ env.NEW_VERSION }}"
           git push

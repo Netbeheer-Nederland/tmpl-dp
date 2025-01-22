@@ -1,6 +1,3 @@
-/project/docs/
-/tmp/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -132,5 +129,4 @@ dmypy.json
 .pyre/
 
 # Generated artifacts
-/docs/modules/information-model/
-/schemas/
+/artifacts/

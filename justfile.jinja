@@ -60,9 +60,8 @@ clean:
     @echo -e "\tCleaning up: $DP_ARTIFACTS_DIR"
     @if [ -d "$DP_ARTIFACTS_DIR" ]; then \
         rm -rf "$DP_ARTIFACTS_DIR" \
-    else \
-        mkdir -p "$DP_ARTIFACTS_DIR"; \
     fi
+    mkdir -p "$DP_ARTIFACTS_DIR"
     @echo "… OK."
     @echo
 

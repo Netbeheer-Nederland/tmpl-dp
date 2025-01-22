@@ -28,25 +28,31 @@ gen-json-schema:
     @echo
 
 # Post-process LinkML schema for preview or releasing
-_post-process-linkml-schema:
+[group("generators")]
+post-process-linkml-schema:
     mkdir -p "$DP_ARTIFACTS_DIR/information-models"
     cp "$DP_LINKML_SCHEMA" "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
+    # TODO: Remove potential current version items.
     sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
 
 # Generate schema documentation (as an Antora module)
 [group("generators")]
-gen-docs: _post-process-linkml-schema
+gen-docs: post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
     cp -r "$DP_DOCS_DIR" "$DP_ARTIFACTS_DIR"
+    @echo -en "\t"
     mkdir -p "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
     @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
         "$DP_LINKML_SCHEMA" \
         "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
+    @echo -en "\t"
     sed -i "s/version: true/version: $(git rev-parse --abbrev-ref HEAD)/" "$DP_ARTIFACTS_DIR/documentation/antora.yml"
-    cp "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/
-    cp "$DP_ARTIFACTS_DIR/schemas/*/*" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/
+    @echo -en "\t"
+    cp "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
+    @echo -en "\t"
+    cp "$DP_ARTIFACTS_DIR/schemas/*/*" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
     @echo -n "… "
     @echo "OK."
     @echo

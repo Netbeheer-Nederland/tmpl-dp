@@ -32,7 +32,7 @@ gen-json-schema:
 post-process-linkml-schema:
     mkdir -p "$DP_ARTIFACTS_DIR/information-models"
     cp "$DP_LINKML_SCHEMA" "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
-    # TODO: Remove potential current version items.
+    sed -i '/^version:.*$/d' "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
     sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "$DP_ARTIFACTS_DIR/information-models/${DP_FILENAME}.schema.linkml.yaml"
 
 # Generate schema documentation (as an Antora module)

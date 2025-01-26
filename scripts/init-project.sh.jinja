@@ -5,16 +5,15 @@ poetry install
 git init
 git branch -M v0
 
+git add .
+git commit -m "Initial commit"
+
 gh repo create {{ org }}/{{ name }} \
     --description {{ description }} \
     --source . \
     --push \
     --public
 
-git add .
-git commit -m "Initial commit"
-
-git push -u origin v0
 gh repo edit {{ org }}/{{ name }} --default-branch v0
 git push --delete origin main
 

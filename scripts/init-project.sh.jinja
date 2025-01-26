@@ -30,9 +30,10 @@ git push -u origin docs-dev
 
 git checkout main
 git checkout -b v0
+git push -u origin v0
 
 gh repo edit {{ org }}/{{ name }} --default-branch v0
-gh push --delete origin main
+git push --delete origin main
 
 # TODO: Enable this only as soon as you've managed to make an exception
 # for the CI/CD, which obviously ought to be able to write.

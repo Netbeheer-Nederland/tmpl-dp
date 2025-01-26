@@ -1,9 +1,7 @@
-#_tasks:
-#  - just init
 _answers_file: .copier-answers.yml
-  #_tasks:
-  #- just init-project
-  #- poetry install --no-root
+_tasks:
+  - just init-project
+  - poetry install --no-root
 
 name:
   type: str

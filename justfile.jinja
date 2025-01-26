@@ -128,7 +128,7 @@ preview-version:
 [group("vcs")]
 init-project:
     gh repo create {{ org }}/{{ name }} \
-        --description "" \
+        --description {{ description }} \
         --public \
         --license Apache-2.0
 

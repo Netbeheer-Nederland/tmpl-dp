@@ -55,3 +55,8 @@ gh api \
     --input "scripts/protect-major-branches-ruleset-def.json"
 echo "… OK."
 echo
+
+gh workflow enable 'Preview version'
+gh workflow enable 'Release new major version'
+gh workflow enable 'Release new minor version'
+gh workflow enable 'Release new patch version'

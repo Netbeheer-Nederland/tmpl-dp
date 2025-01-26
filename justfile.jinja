@@ -8,9 +8,9 @@ set windows-shell := ["bash", "-uc"]
 _default:
     @just --list --justfile {{ '{{ justfile() }}' }}
 
-# Generate everything
-[group("generators")]
-gen-all: clean _post-process-linkml-schema gen-json-schema gen-docs
+# Generate all artifacts
+[group("generation")]
+generate: clean _post-process-linkml-schema generate-json-schema generate-docs
     @echo -en "\t"
     cp -r "artifacts/information_models" "artifacts/documentation/modules/information-model/attachments/"
     @echo -en "\t"
@@ -19,7 +19,7 @@ gen-all: clean _post-process-linkml-schema gen-json-schema gen-docs
     @echo "OK."
 
 # Post-process LinkML schema for preview or releasing
-[group("generators")]
+[group("generation")]
 _post-process-linkml-schema:
     mkdir -p "artifacts/information_models"
     cp "information_models/{{ filename }}.schema.linkml.yaml" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
@@ -27,13 +27,13 @@ _post-process-linkml-schema:
     sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
 
 # Generate JSON Schema
-[group("generators")]
-gen-json-schema: _post-process-linkml-schema
+[group("generation")]
+generate-json-schema: _post-process-linkml-schema
     @echo "Generating JSON Schema…"
     @echo -en "\t"
     mkdir -p "artifacts/schemas/json_schema"
     @echo -en "\t"
-    poetry run gen-json-schema \
+    poetry run generate-json-schema \
         --not-closed \
         "artifacts/information_models/{{ filename }}.schema.linkml.yaml" \
         > "artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
@@ -44,8 +44,8 @@ gen-json-schema: _post-process-linkml-schema
     @echo
 
 # Generate documentation (Antora component)
-[group("generators")]
-gen-docs: _post-process-linkml-schema
+[group("generation")]
+generate-docs: _post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
     cp -r "documentation" "artifacts"
@@ -62,7 +62,7 @@ gen-docs: _post-process-linkml-schema
     @echo
 
 # Clean up the output directory
-[group("general")]
+[group("generation")]
 clean:
     @echo "Cleaning up generated artifacts…"
     @echo -e "\tCleaning up: artifacts"
@@ -78,18 +78,18 @@ clean:
 edit-schema:
     @${VISUAL:-${EDITOR:-nano}} information_models/{{ filename }}.schema.linkml.yaml
 
-# Show class hierarchy in information model
+# Show classes in information model
 [group("schema")]
 show-schema-classes:
     yq '.classes.* | key' information_models/{{ filename }}.schema.linkml.yaml
 
-# Show class hierarchy in information model
+# Show definition of given class
 [group("schema")]
 get-def curie:
-    @yq '.classes.* | select(.class_uri == "{{ '{{curie}}' }}")' information_models/{{ filename }}.schema.linkml.yaml
+    yq '.classes.* | select(.class_uri == "{{ '{{curie}}' }}")' information_models/{{ filename }}.schema.linkml.yaml
 
 # Release new major version
-[group("vcs")]
+[group("version-control")]
 release-major-version:
     @echo "Releasing new major version…"
     @echo -en "\t"
@@ -98,7 +98,7 @@ release-major-version:
     @echo
 
 # Release new minor version
-[group("vcs")]
+[group("version-control")]
 release-minor-version:
     @echo "Releasing new minor version…"
     @echo -en "\t"
@@ -107,7 +107,7 @@ release-minor-version:
     @echo
 
 # Release new patch version
-[group("vcs")]
+[group("version-control")]
 release-patch-version:
     @echo "Releasing new patch version…"
     @echo -en "\t"
@@ -116,57 +116,10 @@ release-patch-version:
     @echo
 
 # Preview version
-[group("vcs")]
+[group("version-control")]
 preview-version:
     @echo "Generating preview of version…"
     @echo -en "\t"
     gh workflow run preview_release.yaml --ref $(git rev-parse --abbrev-ref HEAD)
-    @echo "… OK."
-    @echo
-
-# Initialize project
-[group("vcs")]
-init-project:
-    poetry install
-
-    gh repo create {{ org }}/{{ name }} \
-        --description {{ description }} \
-        --public \
-        --license Apache-2.0
-
-    git init
-
-    git remote add origin git@github.com:{{ org }}/{{ name }}.git
-
-    git branch -M v0
-    git add .
-    git commit -m "Initial commit"
-
-    git push -u origin v0
-    gh repo edit {{ org }}/{{ name }} --default-branch v0
-    git push --delete origin main
-
-    # TODO: Enable this only as soon as you've managed to make an exception
-    # for the CI/CD, which obviously ought to be able to write.
-    #
-    #@echo "Adding ruleset to protect documentation branches…"
-    #@echo -en "\t"
-    #gh api \
-    #    --method POST \
-    #    -H "Accept: application/vnd.github+json" \
-    #    -H "X-GitHub-Api-Version: 2022-11-28" \
-    #    /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-    #    --input "scripts/protect-docs-branches-ruleset-def.json"
-    #@echo "… OK."
-    #@echo
-
-    @echo "Adding ruleset to protect major branches…"
-    @echo -en "\t"
-    gh api \
-        --method POST \
-        -H "Accept: application/vnd.github+json" \
-        -H "X-GitHub-Api-Version: 2022-11-28" \
-        /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-        --input "scripts/protect-major-branches-ruleset-def.json"
     @echo "… OK."
     @echo

@@ -1,6 +1,6 @@
 _answers_file: .copier-answers.yml
 _tasks:
-  - just init-project
+  - bash scripts/init-project.sh
 
 name:
   type: str
@@ -26,3 +26,9 @@ schema_base_uri:
 #  choices:
 #    - Poetry
 #    - uv
+#
+#git_protocol
+#  type: str
+#  choices:
+#    - SSH
+#    - HTTPS

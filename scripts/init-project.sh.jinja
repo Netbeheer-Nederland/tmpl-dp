@@ -1,0 +1,45 @@
+#!/bin/env bash
+
+poetry install
+
+gh repo create {{ org }}/{{ name }} \
+    --description {{ description }} \
+    --public \
+    --license Apache-2.0
+
+git init
+
+git remote add origin git@github.com:{{ org }}/{{ name }}.git
+
+git branch -M v0
+git add .
+git commit -m "Initial commit"
+
+git push -u origin v0
+gh repo edit {{ org }}/{{ name }} --default-branch v0
+git push --delete origin main
+
+# TODO: Enable this only as soon as you've managed to make an exception
+# for the CI/CD, which obviously ought to be able to write.
+#
+#@echo "Adding ruleset to protect documentation branches…"
+#@echo -en "\t"
+#gh api \
+#    --method POST \
+#    -H "Accept: application/vnd.github+json" \
+#    -H "X-GitHub-Api-Version: 2022-11-28" \
+#    /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+#    --input "scripts/protect-docs-branches-ruleset-def.json"
+#@echo "… OK."
+#@echo
+
+@echo "Adding ruleset to protect major branches…"
+@echo -en "\t"
+gh api \
+    --method POST \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+    --input "scripts/protect-major-branches-ruleset-def.json"
+@echo "… OK."
+@echo

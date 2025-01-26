@@ -33,7 +33,7 @@ generate-json-schema: _post-process-linkml-schema
     @echo -en "\t"
     mkdir -p "artifacts/schemas/json_schema"
     @echo -en "\t"
-    poetry run generate-json-schema \
+    poetry run gen-json-schema \
         --not-closed \
         "artifacts/information_models/{{ filename }}.schema.linkml.yaml" \
         > "artifacts/schemas/json_schema/{{ filename }}.json_schema.json"

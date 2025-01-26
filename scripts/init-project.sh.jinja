@@ -14,20 +14,19 @@ gh repo create {{ org }}/{{ name }} \
     --push \
     --public
 
-gh repo edit {{ org }}/{{ name }} --default-branch v0
-git push --delete origin main
+#gh repo edit {{ org }}/{{ name }} --default-branch v0
 
 git checkout --orphan docs
 git rm -rf .
 git add .
-git commit -m "Initial commit"
+git commit --allow-empty -m "Initial commit"
 git push -u origin docs
 
 git checkout v0
 git checkout --orphan docs-dev
 git rm -rf .
 git add .
-git commit -m "Initial commit"
+git commit --allow-empty -m "Initial commit"
 git push -u origin docs-dev
 
 git checkout v0

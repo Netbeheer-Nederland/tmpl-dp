@@ -14,7 +14,7 @@ gh repo create {{ org }}/{{ name }} \
     --push \
     --public
 
-#gh repo edit {{ org }}/{{ name }} --default-branch v0
+gh repo edit {{ org }}/{{ name }} --default-branch v0
 
 git checkout --orphan docs
 git rm -rf .

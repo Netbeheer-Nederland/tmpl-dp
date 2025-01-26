@@ -29,6 +29,7 @@ jobs:
 
           git config user.name "CICD"
           git config user.email "cicd@netbeheernederland.nl"
+
           git tag $NEW_VERSION
           git push --tags
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
@@ -47,26 +48,31 @@ jobs:
           just gen-all
       - name: Commit artifacts to `docs` branch
         run: |
-          git config user.name "CICD"
-          git config user.email "cicd@netbeheernederland.nl"
           git fetch
           git checkout docs
 
           if [ -d "${{ env.NEW_VERSION }}" ]; then
-              exit 1
+              exit 1  # Versions are set in stone.
           fi
-          mv artifacts/documentation "${{ github.ref_name }}"
+
+          sed -i '/^version: .*$/d' artifacts/documentation/antora.yml
+          sed -i "/^name: .*$/a version: ${{ env.NEW_VERSION }}" artifacts/documentation/antora.yml
+
+          mv artifacts/documentation "${{ env.NEW_VERSION }}"
+
+          git config user.name "CICD"
+          git config user.email "cicd@netbeheernederland.nl"
 
           git add "${{ env.NEW_VERSION }}"
           git commit -m "Added docs and schemas for ${{ env.NEW_VERSION }}"
           git push
       - name: Prepare release
-        run: echo "New version." > release_notes.txt
+        run: echo "" > release_notes.txt
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           body_path: release_notes.txt
           tag_name: ${{ env.NEW_VERSION }}
           files: |
-            ${{ env.NEW_VERSION }}/modules/information-model/attachments/*.schema.linkml.yaml
-            ${{ env.NEW_VERSION }}/modules/information-model/attachments/*.json_schema.json
+            ${{ env.NEW_VERSION }}/modules/information-model/attachments/schemas/*.schema.linkml.yaml
+            ${{ env.NEW_VERSION }}/modules/information-model/attachments/schemas/*/*

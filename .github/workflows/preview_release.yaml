@@ -31,12 +31,17 @@ jobs:
           git checkout docs-dev
 
           if [ -d "${{ github.ref_name }}" ]; then
-              rm -rf "{{ github.ref_name }}"
+              rm -rf "${{ github.ref_name }}"
           fi
+
+          sed -i '/^version: .*$/d' artifacts/documentation/antora.yml
+          sed -i "/^name: .*$/a version: ${{ github.ref_name }}" artifacts/documentation/antora.yml
+
           mv artifacts/documentation "${{ github.ref_name }}"
 
           git config user.name "CICD"
           git config user.email "cicd@netbeheernederland.nl"
+
           git add "${{ github.ref_name }}"
           git commit -m "Added docs and schemas for ${{ github.ref_name }}"
           git push

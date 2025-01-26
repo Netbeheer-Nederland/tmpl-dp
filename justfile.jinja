@@ -8,11 +8,25 @@ _default:
 
 # Generate everything
 [group("generators")]
-gen-all: clean gen-json-schema gen-docs
+gen-all: clean post-process-linkml-schema gen-json-schema gen-docs
+    @echo -en "\t"
+    cp "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
+    @echo -en "\t"
+    cp -r "$DP_ARTIFACTS_DIR/schemas" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
+    @echo -n "… "
+    @echo "OK."
+
+# Post-process LinkML schema for preview or releasing
+[group("generators")]
+post-process-linkml-schema:
+    mkdir -p "$DP_ARTIFACTS_DIR/information_models"
+    cp "$DP_LINKML_SCHEMA" "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
+    sed -i '/^version:.*$/d' "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
+    sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
 
 # Generate JSON Schema
 [group("generators")]
-gen-json-schema:
+gen-json-schema: post-process-linkml-schema
     @echo "Generating JSON Schema…"
     @echo -en "\t"
     mkdir -p "$DP_ARTIFACTS_DIR/schemas/json_schema"
@@ -27,15 +41,7 @@ gen-json-schema:
     @echo -e "Generated JSON Schema at: $DP_ARTIFACTS_DIR/schemas/json_schema/$DP_FILENAME.json_schema.json"
     @echo
 
-# Post-process LinkML schema for preview or releasing
-[group("generators")]
-post-process-linkml-schema:
-    mkdir -p "$DP_ARTIFACTS_DIR/information_models"
-    cp "$DP_LINKML_SCHEMA" "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
-    sed -i '/^version:.*$/d' "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
-    sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
-
-# Generate schema documentation (as an Antora module)
+# Generate documentation (Antora component)
 [group("generators")]
 gen-docs: post-process-linkml-schema
     @echo "Generating documentation…"
@@ -48,12 +54,6 @@ gen-docs: post-process-linkml-schema
         "$DP_LINKML_SCHEMA" \
         "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
     @echo -en "\t"
-    sed -i "s/version: true/version: $(git rev-parse --abbrev-ref HEAD)/" "$DP_ARTIFACTS_DIR/documentation/antora.yml"
-    @echo -en "\t"
-    cp "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
-    @echo -en "\t"
-    cp "$DP_ARTIFACTS_DIR/schemas/*/*" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
-    @echo -n "… "
     @echo "OK."
     @echo
     @echo -e "Generated documentation files at: $DP_ARTIFACTS_DIR/documentation"

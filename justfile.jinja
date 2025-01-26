@@ -122,9 +122,29 @@ preview-version:
     @echo "… OK."
     @echo
 
-# Add GitHub branch protection rules for documentation branches
+# Add GitHub branch protection rules
 [group("vcs")]
-_protect-docs-branches:
+add-branch-protections: _protect-docs-branches _protect-major-branches
+
+# Initialize project
+[group("vcs")]
+init-project:
+    git init
+
+    git branch -M v0
+    git push -u origin v0
+
+    git checkout --orphan docs
+    git push -u origin docs
+
+    git checkout --orphan docs-dev
+    git push -u origin docs-dev
+
+    gh repo create bartkl/"$DP_NAME" \
+        --description {{ description }} \
+        --include-all-branches \
+        --license Apache-2.0
+
     @echo "Adding ruleset to protect documentation branches…"
     @echo -en "\t"
     gh api \
@@ -136,9 +156,6 @@ _protect-docs-branches:
     @echo "… OK."
     @echo
 
-# Add GitHub branch protection rules for major branches
-[group("vcs")]
-_protect-major-branches:
     @echo "Adding ruleset to protect major branches…"
     @echo -en "\t"
     gh api \
@@ -150,6 +167,4 @@ _protect-major-branches:
     @echo "… OK."
     @echo
 
-# Add GitHub branch protection rules
-[group("vcs")]
-add-branch-protections: _protect-docs-branches _protect-major-branches
+    poetry install

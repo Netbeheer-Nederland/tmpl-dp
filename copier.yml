@@ -1,3 +1,5 @@
+_tasks:
+  - just init
 _answers_file: .copier-answers.yml
   #_tasks:
   #- just init-project

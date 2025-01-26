@@ -1,7 +1,9 @@
-set dotenv-required
-set dotenv-load
+#set dotenv-required
+#set dotenv-load
 set shell := ["bash", "-uc"]
 set windows-shell := ["bash", "-uc"]
+
+{% set filename = name | replace("-", "_") %}
 
 _default:
     @just --list --justfile {{ '{{ justfile() }}' }}
@@ -10,35 +12,35 @@ _default:
 [group("generators")]
 gen-all: clean post-process-linkml-schema gen-json-schema gen-docs
     @echo -en "\t"
-    cp "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
+    cp "artifacts/information_models/{{ filename }}.schema.linkml.yaml" "artifacts/documentation/modules/ROOT/attachments/"
     @echo -en "\t"
-    cp -r "$DP_ARTIFACTS_DIR/schemas" "$DP_ARTIFACTS_DIR/documentation/modules/ROOT/attachments/"
+    cp -r "artifacts/schemas" "artifacts/documentation/modules/ROOT/attachments/"
     @echo -n "… "
     @echo "OK."
 
 # Post-process LinkML schema for preview or releasing
 [group("generators")]
 post-process-linkml-schema:
-    mkdir -p "$DP_ARTIFACTS_DIR/information_models"
-    cp "$DP_LINKML_SCHEMA" "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
-    sed -i '/^version: .*$/d' "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
-    sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "$DP_ARTIFACTS_DIR/information_models/${DP_FILENAME}.schema.linkml.yaml"
+    mkdir -p "artifacts/information_models"
+    cp "$DP_LINKML_SCHEMA" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
+    sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
+    sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
 
 # Generate JSON Schema
 [group("generators")]
 gen-json-schema: post-process-linkml-schema
     @echo "Generating JSON Schema…"
     @echo -en "\t"
-    mkdir -p "$DP_ARTIFACTS_DIR/schemas/json_schema"
+    mkdir -p "artifacts/schemas/json_schema"
     @echo -en "\t"
     poetry run gen-json-schema \
         --not-closed \
         "$DP_LINKML_SCHEMA" \
-        > "$DP_ARTIFACTS_DIR/schemas/json_schema/$DP_FILENAME.json_schema.json"
+        > "artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
     @echo -n "… "
     @echo "OK."
     @echo
-    @echo -e "Generated JSON Schema at: $DP_ARTIFACTS_DIR/schemas/json_schema/$DP_FILENAME.json_schema.json"
+    @echo -e "Generated JSON Schema at: artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
     @echo
 
 # Generate documentation (Antora component)
@@ -46,28 +48,28 @@ gen-json-schema: post-process-linkml-schema
 gen-docs: post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
-    cp -r "$DP_DOCS_DIR" "$DP_ARTIFACTS_DIR"
+    cp -r "documentation" "artifacts"
     @echo -en "\t"
-    mkdir -p "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
+    mkdir -p "artifacts/documentation/modules/information-model"
     @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
         "$DP_LINKML_SCHEMA" \
-        "$DP_ARTIFACTS_DIR/documentation/modules/information-model"
+        "artifacts/documentation/modules/information-model"
     @echo -en "\t"
     @echo "OK."
     @echo
-    @echo -e "Generated documentation files at: $DP_ARTIFACTS_DIR/documentation"
+    @echo -e "Generated documentation files at: artifacts/documentation"
     @echo
 
 # Clean up the output directory
 [group("general")]
 clean:
     @echo "Cleaning up generated artifacts…"
-    @echo -e "\tCleaning up: $DP_ARTIFACTS_DIR"
-    @if [ -d "$DP_ARTIFACTS_DIR" ]; then \
-        rm -rf "$DP_ARTIFACTS_DIR"; \
+    @echo -e "\tCleaning up: artifacts"
+    @if [ -d "artifacts" ]; then \
+        rm -rf "artifacts"; \
     fi
-    mkdir -p "$DP_ARTIFACTS_DIR"
+    mkdir -p "artifacts"
     @echo "… OK."
     @echo
 
@@ -125,21 +127,21 @@ preview-version:
 # Initialize project
 [group("vcs")]
 init-project:
-    gh repo create {{ org }}/"$DP_NAME" \
+    gh repo create {{ org }}/{{ name }} \
         --description "" \
         --public \
         --license Apache-2.0
 
     git init
 
-    git remote add origin git@github.com:{{ org }}/$DP_NAME.git
+    git remote add origin git@github.com:{{ org }}/{{ name }}.git
 
     git branch -M v0
     git add .
     git commit -m "Initial commit"
 
     git push -u origin v0
-    gh repo edit {{ org }}/"$DP_NAME" --default-branch v0
+    gh repo edit {{ org }}/{{ name }} --default-branch v0
     git push --delete origin main
 
     @echo "Adding ruleset to protect documentation branches…"

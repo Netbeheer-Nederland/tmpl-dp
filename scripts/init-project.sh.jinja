@@ -2,22 +2,37 @@
 
 poetry install
 
+git init
+git branch -M v0
+
 gh repo create {{ org }}/{{ name }} \
     --description {{ description }} \
+    --source . \
+    --push \
     --public \
     --license Apache-2.0
 
-git init
-
-git remote add origin git@github.com:{{ org }}/{{ name }}.git
-
-git branch -M v0
 git add .
 git commit -m "Initial commit"
 
 git push -u origin v0
 gh repo edit {{ org }}/{{ name }} --default-branch v0
 git push --delete origin main
+
+git checkout --orphan docs
+git rm -rf .
+git add .
+git commit -m "Initial commit"
+git push -u origin docs
+
+git checkout v0
+git checkout --orphan docs-dev
+git rm -rf .
+git add .
+git commit -m "Initial commit"
+git push -u origin docs-dev
+
+git checkout v0
 
 # TODO: Enable this only as soon as you've managed to make an exception
 # for the CI/CD, which obviously ought to be able to write.

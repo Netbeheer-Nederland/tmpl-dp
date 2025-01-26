@@ -20,7 +20,7 @@ jobs:
           git fetch --tags
 
           if [ -z $(git tag | grep -P '^v\d+\.\d+\.\d+$' | grep ^${{ github.ref_name }} | cut -c 2- | sort -t . -k 1,1n -k 2,2n -k 3,3n | tail -1) ]; then
-              NEW_VERSION="${{ github.ref_name }}.0.0"
+              NEW_VERSION="${{ github.ref_name }}.1.0"
           else
               LATEST_VERSION=$(git tag | grep -P '^v\d+\.\d+\.\d+$' | grep ^${{ github.ref_name }} | cut -c 2- | sort -t . -k 1,1n -k 2,2n -k 3,3n | tail -1)
               LATEST_MAJOR=$(echo $LATEST_VERSION | cut -d . -f 1)
@@ -76,5 +76,5 @@ jobs:
           body_path: release_notes.txt
           tag_name: ${{ env.NEW_VERSION }}
           files: |
-            ${{ env.NEW_VERSION }}/modules/information-model/attachments/information-models/*.schema.linkml.yaml
+            ${{ env.NEW_VERSION }}/modules/information-model/attachments/information_models/*.schema.linkml.yaml
             ${{ env.NEW_VERSION }}/modules/information-model/attachments/schemas/*/*

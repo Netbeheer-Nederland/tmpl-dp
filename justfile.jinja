@@ -10,7 +10,7 @@ _default:
 
 # Generate everything
 [group("generators")]
-gen-all: clean post-process-linkml-schema gen-json-schema gen-docs
+gen-all: clean _post-process-linkml-schema gen-json-schema gen-docs
     @echo -en "\t"
     cp -r "artifacts/information_models" "artifacts/documentation/modules/information-model/attachments/"
     @echo -en "\t"
@@ -20,7 +20,7 @@ gen-all: clean post-process-linkml-schema gen-json-schema gen-docs
 
 # Post-process LinkML schema for preview or releasing
 [group("generators")]
-post-process-linkml-schema:
+_post-process-linkml-schema:
     mkdir -p "artifacts/information_models"
     cp "information_models/{{ filename }}.schema.linkml.yaml" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
@@ -28,7 +28,7 @@ post-process-linkml-schema:
 
 # Generate JSON Schema
 [group("generators")]
-gen-json-schema: post-process-linkml-schema
+gen-json-schema: _post-process-linkml-schema
     @echo "Generating JSON Schema…"
     @echo -en "\t"
     mkdir -p "artifacts/schemas/json_schema"
@@ -45,7 +45,7 @@ gen-json-schema: post-process-linkml-schema
 
 # Generate documentation (Antora component)
 [group("generators")]
-gen-docs: post-process-linkml-schema
+gen-docs: _post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
     cp -r "documentation" "artifacts"

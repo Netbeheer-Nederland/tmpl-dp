@@ -63,9 +63,9 @@ echo
 
 # Set workflow permissions
 
-gh api \
-  --method PUT \
-  -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  /repos/{{ org }}/{{ name }}/actions/permissions \
-   -F "enabled=true" -f "allowed_actions=all"
+#gh api \
+#  --method PUT \
+#  -H "Accept: application/vnd.github+json" \
+#  -H "X-GitHub-Api-Version: 2022-11-28" \
+#  /repos/{{ org }}/{{ name }}/actions/permissions \
+#   -F "enabled=true" -f "allowed_actions=all"

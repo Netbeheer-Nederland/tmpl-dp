@@ -22,9 +22,13 @@ build: clean _post-process-linkml-schema generate-json-schema generate-docs
 [group("generation")]
 _post-process-linkml-schema:
     mkdir -p "artifacts/information_models"
-    cp "information_models/{{ filename }}.schema.linkml.yaml" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
+    cp "information_models/{{ filename }}.schema.linkml.yaml" "artifacts/information_models/"
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
-    sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
+    @if [ -z ${VERSION:-} ]; then \
+        sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"; \
+    else \
+        sed -i "/^name: .*$/a version: ${VERSION}" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"; \
+    fi
 
 # Generate JSON Schema
 [group("generation")]

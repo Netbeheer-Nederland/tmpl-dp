@@ -33,6 +33,7 @@ git checkout -b v0
 git push -u origin v0
 
 gh repo edit {{ org }}/{{ name }} --default-branch v0
+git branch -D main
 git push --delete origin main
 
 # TODO: Enable this only as soon as you've managed to make an exception
@@ -60,7 +61,11 @@ gh api \
 echo "… OK."
 echo
 
-#gh workflow enable 'Preview version'
-#gh workflow enable 'Release new major version'
-#gh workflow enable 'Release new minor version'
-#gh workflow enable 'Release new patch version'
+# Set workflow permissions
+
+gh api \
+  --method PUT \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/{{ org }}/{{ name }}/actions/permissions \
+   -F "enabled=true" -f "allowed_actions=all"

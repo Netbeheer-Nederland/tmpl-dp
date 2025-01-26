@@ -73,5 +73,5 @@ jobs:
           body_path: release_notes.txt
           tag_name: ${{ env.NEW_VERSION }}
           files: |
-            ${{ env.NEW_VERSION }}/modules/information-model/attachments/schemas/*.schema.linkml.yaml
+            ${{ env.NEW_VERSION }}/modules/information-model/attachments/information-models/*.schema.linkml.yaml
             ${{ env.NEW_VERSION }}/modules/information-model/attachments/schemas/*/*

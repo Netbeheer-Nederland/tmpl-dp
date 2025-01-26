@@ -12,9 +12,9 @@ _default:
 [group("generators")]
 gen-all: clean post-process-linkml-schema gen-json-schema gen-docs
     @echo -en "\t"
-    cp "artifacts/information_models/{{ filename }}.schema.linkml.yaml" "artifacts/documentation/modules/ROOT/attachments/"
+    cp -r "artifacts/information_models" "artifacts/documentation/modules/information-model/attachments/"
     @echo -en "\t"
-    cp -r "artifacts/schemas" "artifacts/documentation/modules/ROOT/attachments/"
+    cp -r "artifacts/schemas" "artifacts/documentation/modules/information-model/attachments/"
     @echo -n "… "
     @echo "OK."
 
@@ -22,7 +22,7 @@ gen-all: clean post-process-linkml-schema gen-json-schema gen-docs
 [group("generators")]
 post-process-linkml-schema:
     mkdir -p "artifacts/information_models"
-    cp "$DP_LINKML_SCHEMA" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
+    cp "information_models/{{ filename }}.schema.linkml.yaml" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
     sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
 
@@ -35,7 +35,7 @@ gen-json-schema: post-process-linkml-schema
     @echo -en "\t"
     poetry run gen-json-schema \
         --not-closed \
-        "$DP_LINKML_SCHEMA" \
+        "artifacts/information_models/{{ filename }}.schema.linkml.yaml" \
         > "artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
     @echo -n "… "
     @echo "OK."
@@ -53,7 +53,7 @@ gen-docs: post-process-linkml-schema
     mkdir -p "artifacts/documentation/modules/information-model"
     @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
-        "$DP_LINKML_SCHEMA" \
+        "artifacts/information_models/{{ filename }}.schema.linkml.yaml" \
         "artifacts/documentation/modules/information-model"
     @echo -en "\t"
     @echo "OK."
@@ -76,17 +76,17 @@ clean:
 # Edit the information model
 [group("schema")]
 edit-schema:
-    @${VISUAL:-${EDITOR:-nano}} "$DP_LINKML_SCHEMA"
+    @${VISUAL:-${EDITOR:-nano}} information_models/{{ filename }}.schema.linkml.yaml
 
 # Show class hierarchy in information model
 [group("schema")]
 show-schema-classes:
-    yq '.classes.* | key' "$DP_LINKML_SCHEMA"
+    yq '.classes.* | key' information_models/{{ filename }}.schema.linkml.yaml
 
 # Show class hierarchy in information model
 [group("schema")]
 get-def curie:
-    @yq '.classes.* | select(.class_uri == "{{curie}}")' "$DP_LINKML_SCHEMA"
+    @yq '.classes.* | select(.class_uri == "{{ '{{curie}}' }}")' information_models/{{ filename }}.schema.linkml.yaml
 
 # Release new major version
 [group("vcs")]
@@ -151,7 +151,7 @@ init-project:
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
         /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-        --input "$DP_SCRIPTS_DIR/protect-docs-branches-ruleset-def.json"
+        --input "scripts/protect-docs-branches-ruleset-def.json"
     @echo "… OK."
     @echo
 
@@ -162,7 +162,7 @@ init-project:
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
         /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-        --input "$DP_SCRIPTS_DIR/protect-major-branches-ruleset-def.json"
+        --input "scripts/protect-major-branches-ruleset-def.json"
     @echo "… OK."
     @echo
 

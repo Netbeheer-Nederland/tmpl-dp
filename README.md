@@ -14,7 +14,7 @@
 Simply run:
 
 ```
-$ copier copy gh:Netbeheer-Nederland/tmpl-dp dp-name-of-data-product
+$ copier copy --trust gh:Netbeheer-Nederland/tmpl-dp dp-name-of-data-product
 ```
 
 Copier will ask you for some information and store the answers in a file used to set project variables.

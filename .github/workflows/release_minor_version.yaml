@@ -44,7 +44,7 @@ jobs:
         run: pip install rust-just==1.38.0
       - name: Generate documentation and schemas
         run: |
-          just gen-all
+          just build
       - name: Commit artifacts to `docs` branch
         run: |
           git fetch

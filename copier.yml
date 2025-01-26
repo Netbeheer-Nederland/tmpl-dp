@@ -16,6 +16,9 @@ title:
 description:
   type: str
   help: Describe what the data product is about…
+org:
+  type: str
+  help: Please provide the GitHub organisation (namespace) to use…
 schema_base_uri:
   type: str
   help: Please provide the base URI to use for schemas…

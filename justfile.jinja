@@ -125,21 +125,22 @@ preview-version:
 # Initialize project
 [group("vcs")]
 init-project:
+    gh repo create {{ org }}/"$DP_NAME" \
+        --description "" \
+        --public \
+        --license Apache-2.0
+
     git init
 
+    git remote add origin git@github.com:{{ org }}/$DP_NAME.git
+
     git branch -M v0
+    git add .
+    git commit -m "Initial commit"
+
     git push -u origin v0
-
-    git checkout --orphan docs
-    git push -u origin docs
-
-    git checkout --orphan docs-dev
-    git push -u origin docs-dev
-
-    gh repo create bartkl/"$DP_NAME" \
-        --description {{ description }} \
-        --include-all-branches \
-        --license Apache-2.0
+    gh repo edit {{ org }}/"$DP_NAME" --default-branch v0
+    git push --delete origin main
 
     @echo "Adding ruleset to protect documentation branches…"
     @echo -en "\t"
@@ -147,7 +148,7 @@ init-project:
         --method POST \
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
-        /repos/Netbeheer-Nederland/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+        /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
         --input "$DP_SCRIPTS_DIR/protect-docs-branches-ruleset-def.json"
     @echo "… OK."
     @echo
@@ -158,9 +159,9 @@ init-project:
         --method POST \
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
-        /repos/Netbeheer-Nederland/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+        /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
         --input "$DP_SCRIPTS_DIR/protect-major-branches-ruleset-def.json"
     @echo "… OK."
     @echo
 
-    poetry install
+    #poetry install

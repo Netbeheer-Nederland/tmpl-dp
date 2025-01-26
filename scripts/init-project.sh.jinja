@@ -6,7 +6,7 @@ gh repo create {{ org }}/{{ name }} \
     --description {{ description }} \
     --public
 
-git init
+git init -b main
 
 git remote add origin git@github.com:{{ org }}/{{ name }}.git
 git fetch

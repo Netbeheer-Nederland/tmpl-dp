@@ -10,11 +10,11 @@ git commit -m "Initial commit"
 
 gh repo create {{ org }}/{{ name }} \
     --description {{ description }} \
-    --source . \
-    --push \
     --public
-
 gh repo edit {{ org }}/{{ name }} --default-branch v0
+
+git remote add origin git@github.com:{{ org }}/{{ name }}.git
+git push -u origin v0
 
 git checkout --orphan docs
 git rm -rf .
@@ -56,7 +56,7 @@ gh api \
 echo "… OK."
 echo
 
-gh workflow enable 'Preview version'
-gh workflow enable 'Release new major version'
-gh workflow enable 'Release new minor version'
-gh workflow enable 'Release new patch version'
+#gh workflow enable 'Preview version'
+#gh workflow enable 'Release new major version'
+#gh workflow enable 'Release new minor version'
+#gh workflow enable 'Release new patch version'

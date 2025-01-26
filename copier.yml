@@ -5,17 +5,19 @@ _tasks:
 name:
   type: str
   help: Name of the data product…
-  default: dp-lower-kebab-case
+  placeholder: dp-some-title
 title:
   type: str
   help: Title of the data product…
-  default: Name in Title Case
+  placeholder: Some Title
 description:
   type: str
   help: Describe what the data product is about…
+  placeholder: This is the data product “Some Title”.
 org:
   type: str
   help: Please provide the GitHub organisation (namespace) to use…
+  default: Netbeheer-Nederland
 schema_base_uri:
   type: str
   help: Please provide the base URI to use for schemas…

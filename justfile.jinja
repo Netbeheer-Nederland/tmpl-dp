@@ -122,10 +122,6 @@ preview-version:
     @echo "… OK."
     @echo
 
-# Add GitHub branch protection rules
-[group("vcs")]
-add-branch-protections: _protect-docs-branches _protect-major-branches
-
 # Initialize project
 [group("vcs")]
 init-project:

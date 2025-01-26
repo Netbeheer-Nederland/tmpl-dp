@@ -127,6 +127,8 @@ preview-version:
 # Initialize project
 [group("vcs")]
 init-project:
+    poetry install
+
     gh repo create {{ org }}/{{ name }} \
         --description {{ description }} \
         --public \
@@ -144,16 +146,19 @@ init-project:
     gh repo edit {{ org }}/{{ name }} --default-branch v0
     git push --delete origin main
 
-    @echo "Adding ruleset to protect documentation branches…"
-    @echo -en "\t"
-    gh api \
-        --method POST \
-        -H "Accept: application/vnd.github+json" \
-        -H "X-GitHub-Api-Version: 2022-11-28" \
-        /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
-        --input "scripts/protect-docs-branches-ruleset-def.json"
-    @echo "… OK."
-    @echo
+    # TODO: Enable this only as soon as you've managed to make an exception
+    # for the CI/CD, which obviously ought to be able to write.
+    #
+    #@echo "Adding ruleset to protect documentation branches…"
+    #@echo -en "\t"
+    #gh api \
+    #    --method POST \
+    #    -H "Accept: application/vnd.github+json" \
+    #    -H "X-GitHub-Api-Version: 2022-11-28" \
+    #    /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+    #    --input "scripts/protect-docs-branches-ruleset-def.json"
+    #@echo "… OK."
+    #@echo
 
     @echo "Adding ruleset to protect major branches…"
     @echo -en "\t"
@@ -165,5 +170,3 @@ init-project:
         --input "scripts/protect-major-branches-ruleset-def.json"
     @echo "… OK."
     @echo
-
-    #poetry install

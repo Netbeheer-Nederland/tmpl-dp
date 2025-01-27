@@ -3,7 +3,7 @@
 poetry install
 
 gh repo create {{ org }}/{{ name }} \
-    --description {{ description | default("…", true) }} \
+    --description {{ description | default("…", true) | tojson }} \
     --public
 
 git init -b main

@@ -10,7 +10,7 @@ _default:
 
 # Generate all artifacts
 [group("generation")]
-build: clean _post-process-linkml-schema generate-json-schema generate-docs
+build: clean _post-process-linkml-schema generate-json-schema generate-documentation
     @echo -en "\t"
     cp -r "artifacts/information_models" "artifacts/documentation/modules/information-model/attachments/"
     @echo -en "\t"
@@ -49,7 +49,7 @@ generate-json-schema: _post-process-linkml-schema
 
 # Generate documentation (Antora component)
 [group("generation")]
-generate-docs: _post-process-linkml-schema
+generate-documentation: _post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
     cp -r "documentation" "artifacts"
@@ -61,7 +61,9 @@ generate-docs: _post-process-linkml-schema
         "artifacts/documentation/modules/information-model"
     @echo -en "\t"
     @echo "OK."
-    @echo
+    @echo -en "\t"
+    echo "- modules/information-model/nav.adoc" >> artifacts/documentation/antora.yml
+    echo 
     @echo -e "Generated documentation files at: artifacts/documentation"
     @echo
 

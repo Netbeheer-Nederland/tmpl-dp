@@ -10,11 +10,13 @@ _default:
 
 # Generate all artifacts
 [group("generation")]
-build: clean _post-process-linkml-schema generate-json-schema generate-documentation
+build: clean _post-process-linkml-schema generate-json-schema generate-documentation generate-example-data validate-example-data
     @echo -en "\t"
-    cp -r "artifacts/information_models" "artifacts/documentation/modules/information-model/attachments/"
+    cp -r "artifacts/information_models" "artifacts/documentation/modules/information-models/attachments/"
     @echo -en "\t"
-    cp -r "artifacts/schemas" "artifacts/documentation/modules/information-model/attachments/"
+    cp -r "artifacts/schemas" "artifacts/documentation/modules/information-models/attachments/"
+    @echo -n "… "
+    cp "artifacts/examples/*" "artifacts/documentation/modules/information-models/examples/"
     @echo -n "… "
     @echo "OK."
 
@@ -22,12 +24,12 @@ build: clean _post-process-linkml-schema generate-json-schema generate-documenta
 [group("generation")]
 _post-process-linkml-schema:
     mkdir -p "artifacts/information_models"
-    cp "information_models/{{ filename }}.schema.linkml.yaml" "artifacts/information_models/"
-    sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yaml"
+    cp "information_models/{{ filename }}.schema.linkml.yml" "artifacts/information_models/"
+    sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yml"
     @if [ -z ${VERSION:-} ]; then \
-        sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"; \
+        sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     else \
-        sed -i "/^name: .*$/a version: ${VERSION}" "artifacts/information_models/{{ filename }}.schema.linkml.yaml"; \
+        sed -i "/^name: .*$/a version: ${VERSION}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     fi
 
 # Generate JSON Schema
@@ -39,13 +41,41 @@ generate-json-schema: _post-process-linkml-schema
     @echo -en "\t"
     poetry run gen-json-schema \
         --not-closed \
-        "artifacts/information_models/{{ filename }}.schema.linkml.yaml" \
+        "artifacts/information_models/{{ filename }}.schema.linkml.yml" \
         > "artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
     @echo -n "… "
     @echo "OK."
     @echo
     @echo -e "Generated JSON Schema at: artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
     @echo
+
+# Generate example data
+[group("generation")]
+generate-example-data: _post-process-linkml-schema
+    @echo "Generating JSON example data…"
+    @echo -en "\t"
+    mkdir -p "artifacts/examples"
+    @echo -en "\t"
+    @for example_file in examples/*.yml; do \
+        poetry run gen-linkml-profile  \
+            convert \
+            "$example_file" \
+            --out "artifacts/examples/${example_file%.*}.json" \
+    done
+    @echo -n "… "
+    @echo "OK."
+    @echo
+    @echo -e "Generated example JSON data at: artifacts/examples"
+    @echo
+
+# Validate example data against JSON Schema
+group("general")]
+validate-example-data: generate-json-schema generate-example-data
+    @echo "Validating example data against JSON schema…"
+    @echo -en "\t"
+    poetry run check-jsonschema --schemafile "artifacts/information_models/{{ filename }}.schema.linkml.yml" "artifacts/examples/*.json"
+    @echo -n "… "
+    @echo "OK."
 
 # Generate documentation (Antora component)
 [group("generation")]
@@ -54,15 +84,15 @@ generate-documentation: _post-process-linkml-schema
     @echo -en "\t"
     cp -r "documentation" "artifacts"
     @echo -en "\t"
-    mkdir -p "artifacts/documentation/modules/information-model"
+    mkdir -p "artifacts/documentation/modules/information-models"
     @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
-        "artifacts/information_models/{{ filename }}.schema.linkml.yaml" \
-        "artifacts/documentation/modules/information-model"
+        "artifacts/information_models/{{ filename }}.schema.linkml.yml" \
+        "artifacts/documentation/modules/information-models"
     @echo -en "\t"
     @echo "OK."
     @echo -en "\t"
-    echo "- modules/information-model/nav.adoc" >> artifacts/documentation/antora.yml
+    echo "- modules/information-models/nav.adoc" >> artifacts/documentation/antora.yml
     echo 
     @echo -e "Generated documentation files at: artifacts/documentation"
     @echo
@@ -82,24 +112,24 @@ clean:
 # Edit the information model
 [group("schema")]
 edit-schema:
-    @${VISUAL:-${EDITOR:-nano}} information_models/{{ filename }}.schema.linkml.yaml
+    @${VISUAL:-${EDITOR:-nano}} information_models/{{ filename }}.schema.linkml.yml
 
 # Show classes in information model
 [group("schema")]
 show-schema-classes:
-    yq '.classes.* | key' information_models/{{ filename }}.schema.linkml.yaml
+    yq '.classes.* | key' information_models/{{ filename }}.schema.linkml.yml
 
 # Show definition of given class
 [group("schema")]
 get-def curie:
-    yq '.classes.* | select(.class_uri == "{{ '{{curie}}' }}")' information_models/{{ filename }}.schema.linkml.yaml
+    yq '.classes.* | select(.class_uri == "{{ '{{curie}}' }}")' information_models/{{ filename }}.schema.linkml.yml
 
 # Release new major version
 [group("version-control")]
 release-major-version:
     @echo "Releasing new major version…"
     @echo -en "\t"
-    gh workflow run release_major_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run release_major_version.yml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
 
@@ -108,7 +138,7 @@ release-major-version:
 release-minor-version:
     @echo "Releasing new minor version…"
     @echo -en "\t"
-    gh workflow run release_minor_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run release_minor_version.yml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
 
@@ -117,7 +147,7 @@ release-minor-version:
 release-patch-version:
     @echo "Releasing new patch version…"
     @echo -en "\t"
-    gh workflow run release_patch_version.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run release_patch_version.yml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
 
@@ -126,6 +156,6 @@ release-patch-version:
 preview-version:
     @echo "Generating preview of version…"
     @echo -en "\t"
-    gh workflow run preview_release.yaml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run preview_release.yml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo

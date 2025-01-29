@@ -5,7 +5,7 @@ set windows-shell := ["bash", "-uc"]
 
 {% set filename = name | replace("-", "_") %}
 
-ref_name := `git rev-parse --abbrev-ref HEAD`
+ref_name := "git rev-parse --abbrev-ref HEAD"
 
 _default:
     @just --list --justfile {{ '{{justfile()}}' }}
@@ -107,7 +107,7 @@ _post-process-linkml-schema:
     cp "information_models/{{ filename }}.schema.linkml.yml" "artifacts/information_models/"
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yml"
     @if [ -z ${VERSION:-} ]; then \
-        sed -i "/^name: .*$/a version: {{ '{{ref_name}}' }}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
+        sed -i "/^name: .*$/a version: {{ '{{shell(ref_name)}}' }}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     else \
         sed -i "/^name: .*$/a version: ${VERSION}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     fi
@@ -213,7 +213,7 @@ get-def curie:
 release-major-version:
     @echo "Releasing new major version…"
     @echo -en "\t"
-    gh workflow run release_major_version.yml --ref {{ '{{ref_name}}' }}
+    gh workflow run release_major_version.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
 
@@ -222,7 +222,7 @@ release-major-version:
 release-minor-version:
     @echo "Releasing new minor version…"
     @echo -en "\t"
-    gh workflow run release_minor_version.yml --ref {{ '{{ref_name}}' }}
+    gh workflow run release_minor_version.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
 
@@ -231,7 +231,7 @@ release-minor-version:
 release-patch-version:
     @echo "Releasing new patch version…"
     @echo -en "\t"
-    gh workflow run release_patch_version.yml --ref {{ '{{ref_name}}' }}
+    gh workflow run release_patch_version.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
 
@@ -240,7 +240,7 @@ release-patch-version:
 preview-version:
     @echo "Generating preview of version…"
     @echo -en "\t"
-    gh workflow run preview_release.yml --ref {{ '{{ref_name}}' }}
+    gh workflow run preview_release.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
 

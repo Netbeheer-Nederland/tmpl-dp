@@ -12,11 +12,11 @@ _default:
 [group("generation")]
 build: clean _post-process-linkml-schema generate-json-schema generate-documentation generate-example-data validate-example-data
     @echo -en "\t"
-    cp -r "artifacts/information_models" "artifacts/documentation/modules/information-models/attachments/"
+    cp -r "artifacts/information_models" "artifacts/documentation/modules/schema/attachments/"
     @echo -en "\t"
-    cp -r "artifacts/schemas" "artifacts/documentation/modules/information-models/attachments/"
+    cp -r "artifacts/schemas" "artifacts/documentation/modules/schema/attachments/"
     @echo -en "\t"
-    cp -r "artifacts/examples" "artifacts/documentation/modules/information-models/"
+    cp -r "artifacts/examples" "artifacts/documentation/modules/schema/"
     @echo -n "… "
     @echo "OK."
 
@@ -88,15 +88,15 @@ generate-documentation: _post-process-linkml-schema
     @echo -en "\t"
     cp -r "documentation" "artifacts"
     @echo -en "\t"
-    mkdir -p "artifacts/documentation/modules/information-models"
+    mkdir -p "artifacts/documentation/modules/schema"
     @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
         "artifacts/information_models/{{ filename }}.schema.linkml.yml" \
-        "artifacts/documentation/modules/information-models"
+        "artifacts/documentation/modules/schema"
     @echo -en "\t"
     @echo "OK."
     @echo -en "\t"
-    echo "- modules/information-models/nav.adoc" >> artifacts/documentation/antora.yml
+    echo "- modules/schema/nav.adoc" >> artifacts/documentation/antora.yml
     echo 
     @echo -e "Generated documentation files at: artifacts/documentation"
     @echo

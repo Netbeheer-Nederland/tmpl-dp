@@ -1,6 +1,4 @@
 _answers_file: .copier-answers.yml
-_tasks:
-  - bash scripts/init-project.sh
 
 name:
   type: str

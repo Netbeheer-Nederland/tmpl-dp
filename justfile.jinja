@@ -10,9 +10,87 @@ ref_name := `git rev-parse --abbrev-ref HEAD`
 _default:
     @just --list --justfile {{ '{{justfile()}}' }}
 
-# Generate all artifacts
-[group("generation")]
+alias init := initialize
+
+# Initialize project
+initialize:
+    #!/bin/env bash
+
+    poetry install
+
+    gh repo create {{ org }}/{{ name }} \
+        --description {{ description | default("…", true) | tojson }} \
+        --public
+
+    git init -b main
+
+    git remote add origin git@github.com:{{ org }}/{{ name }}.git
+    git fetch
+
+    git add .
+    git commit -m "Initial commit"
+    git push -u origin main
+
+    git checkout --orphan docs
+    git rm -rf .
+    git add .
+    git commit --allow-empty -m "Initial commit"
+    git push -u origin docs
+
+    git checkout main
+    git checkout --orphan docs-dev
+    git rm -rf .
+    git add .
+    git commit --allow-empty -m "Initial commit"
+    git push -u origin docs-dev
+
+    git checkout main
+    git checkout -b v0
+    git push -u origin v0
+
+    gh repo edit {{ org }}/{{ name }} --default-branch v0
+    git branch -D main
+    git push --delete origin main
+
+    # TODO: Enable this only as soon as you've managed to make an exception
+    # for the CI/CD, which obviously ought to be able to write.
+    #
+    #echo "Adding ruleset to protect documentation branches…"
+    #echo -en "\t"
+    #gh api \
+    #    --method POST \
+    #    -H "Accept: application/vnd.github+json" \
+    #    -H "X-GitHub-Api-Version: 2022-11-28" \
+    #    /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+    #    --input ".github/rulesets/protect-docs-branches.json"
+    #@echo "… OK."
+    #@echo
+
+    echo "Adding ruleset to protect major branches…"
+    echo -en "\t"
+    gh api \
+        --method POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
+        --input ".github/rulesets/protect-major-branches.json"
+    echo "… OK."
+    echo
+
+    echo "A GitHub repository has been created and configured at: https://github.com/{{ org }}/{{ name}}"
+
+    # Set workflow permissions
+
+    #gh api \
+    #  --method PUT \
+    #  -H "Accept: application/vnd.github+json" \
+    #  -H "X-GitHub-Api-Version: 2022-11-28" \
+    #  /repos/{{ org }}/{{ name }}/actions/permissions \
+    #   -F "enabled=true" -f "allowed_actions=all"
+
+# Build the project
 build: clean _post-process-linkml-schema generate-json-schema generate-documentation generate-example-data validate-example-data
+    @echo "Building project…"
     @echo -en "\t"
     cp -r "artifacts/information_models" "artifacts/documentation/modules/schema/attachments/"
     @echo -en "\t"
@@ -23,7 +101,7 @@ build: clean _post-process-linkml-schema generate-json-schema generate-documenta
     @echo "OK."
 
 # Post-process LinkML schema for preview or releasing
-[group("generation")]
+[group("generators")]
 _post-process-linkml-schema:
     mkdir -p "artifacts/information_models"
     cp "information_models/{{ filename }}.schema.linkml.yml" "artifacts/information_models/"
@@ -35,7 +113,7 @@ _post-process-linkml-schema:
     fi
 
 # Generate JSON Schema
-[group("generation")]
+[group("generators")]
 generate-json-schema: _post-process-linkml-schema
     @echo "Generating JSON Schema…"
     @echo -en "\t"
@@ -52,7 +130,7 @@ generate-json-schema: _post-process-linkml-schema
     @echo
 
 # Generate example data
-[group("generation")]
+[group("generators")]
 generate-example-data: _post-process-linkml-schema
     @echo "Generating JSON example data…"
     @echo -en "\t"
@@ -84,7 +162,7 @@ validate-example-data: generate-json-schema generate-example-data
     @echo "OK."
 
 # Generate documentation (Antora component)
-[group("generation")]
+[group("generators")]
 generate-documentation: _post-process-linkml-schema
     @echo "Generating documentation…"
     @echo -en "\t"
@@ -167,7 +245,7 @@ preview-version:
     @echo
 
 # Create new draft
-[group("vcs")]
+[group("version-control")]
 create-draft:
     #!/bin/bash
     major_branch=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
@@ -191,7 +269,7 @@ create-draft:
     gh pr create --base $major_branch --draft --editor
 
 # Finish draft
-[group("vcs")]
+[group("version-control")]
 finish-draft:
     @echo "Finishing draft…"
     @echo -en "\t"

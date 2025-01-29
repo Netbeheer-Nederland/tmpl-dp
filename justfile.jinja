@@ -20,7 +20,7 @@ build: clean _post-process-linkml-schema generate-json-schema generate-documenta
     cp -r "artifacts/examples" "artifacts/documentation/modules/schema/"
     @echo "… OK."
     @echo
-    echo "All project artifacts have been generated and post-processed, and can found in: artifacts/"
+    @echo "All project artifacts have been generated and post-processed, and can found in: artifacts/"
     @echo
 
 # Clean up the output directory
@@ -131,9 +131,12 @@ initialize:
 # Post-process LinkML schema for preview or releasing
 _post-process-linkml-schema:
     @echo "Copying source files to artifacts directory…"
+    @echo
     mkdir -p "artifacts/information_models"
     cp "information_models/{{ filename }}.schema.linkml.yml" "artifacts/information_models/"
+    @echo
     @echo "Setting version in LinkML schema…"
+    @echo
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yml"
     @if [ -z ${VERSION:-} ]; then \
         sed -i "/^name: .*$/a version: {{ '{{shell(ref_name)}}' }}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \

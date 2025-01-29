@@ -152,7 +152,7 @@ list-classes:
 # Create new draft
 [group("version-control")]
 create-draft:
-    #!/bin/bash
+    #!/bin/env bash
     major_branch=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
 
     echo "Creating new draft…"
@@ -168,8 +168,8 @@ create-draft:
 
     echo "Creating new draft pull request…"
     gh pr create --base $major_branch --draft --editor
-    @echo "… OK."
-    @echo
+    echo "… OK."
+    echo
 
 # Finish draft
 [group("version-control")]

@@ -60,7 +60,7 @@ generate-example-data: _post-process-linkml-schema
         poetry run gen-linkml-profile  \
             convert \
             "$example_file" \
-            --out "artifacts/examples/${example_file%.*}.json" \
+            --out "artifacts/${example_file%.*}.json"; \
     done
     @echo -n "… "
     @echo "OK."

@@ -6,6 +6,8 @@ set windows-shell := ["bash", "-uc"]
 {% set filename = name | replace("-", "_") %}
 
 ref_name := "git rev-parse --abbrev-ref HEAD"
+major_branch_name := "git rev-parse --abbrev-ref HEAD | cut -d . -f 1"
+
 
 _default:
     @just --list --unsorted --justfile {{ '{{justfile()}}' }}
@@ -163,25 +165,20 @@ list-classes:
 
 # Create new draft
 [group("version-control")]
-create-draft:
-    #!/bin/env bash
-    major_branch=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
-
-    echo "Creating new draft…"
-    echo
-    echo "What would you like to name your draft?"
-    read draft_name
-    draft_branch_name=$major_branch.$draft_name
-
-    echo "Creating and tracking new draft branch \`$draft_branch_name\`…"
-    git checkout -b $draft_branch_name
+create-draft name:
+    @echo "Creating new draft…"
+    @echo
+    @echo "Creating and tracking new draft branch…"
+    @echo
+    git checkout -b {{shell(major_branch_name) + "." + name}}
     git commit --allow-empty -m "Start working on draft"
-    git push -u origin $draft_branch_name
-
-    echo "Creating new draft pull request…"
-    gh pr create --base $major_branch --draft --editor
-    echo "… OK."
-    echo
+    git push -u origin {{shell(major_branch_name) + "." + name}}
+    @echo
+    @echo "Creating new draft pull request…"
+    @echo
+    gh pr create --base {{shell(major_branch_name)}} --draft --editor
+    @echo "… OK."
+    @echo
 
 # Finish draft
 [group("version-control")]
@@ -189,6 +186,7 @@ finish-draft:
     @echo "Finishing draft…"
     @echo
     @echo "Marking draft pull request as ready for review…"
+    @echo
     gh pr ready
     @echo "… OK."
     @echo

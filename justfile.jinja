@@ -11,8 +11,8 @@ _default:
     @just --list --justfile {{ '{{justfile()}}' }}
 
 # Initialize project
-[group("general")]
-initialize-project:
+[group("project")]
+initialize:
     #!/bin/env bash
     echo "Initializing project…"
 
@@ -155,8 +155,8 @@ generate-example-data: _post-process-linkml-schema
     @echo -e "Generated example JSON data at: artifacts/examples"
     @echo
 
-# Validate example data against JSON Schema
-[group("general")]
+# Validate example data
+[group("validate")]
 validate-example-data: generate-json-schema generate-example-data
     @echo "Validating example data against JSON schema…"
     @echo -en "\t"
@@ -167,7 +167,7 @@ validate-example-data: generate-json-schema generate-example-data
     @echo -n "… "
     @echo "OK."
 
-# Generate documentation (Antora component)
+# Generate documentation
 [group("generators")]
 generate-documentation: _post-process-linkml-schema
     @echo "Generating documentation…"
@@ -199,19 +199,19 @@ clean:
     @echo "… OK."
     @echo
 
-# Edit the information model
+# Edit the schema
 [group("schema")]
 edit-schema:
     @${VISUAL:-${EDITOR:-nano}} information_models/{{ filename }}.schema.linkml.yml
 
-# Show classes in information model
+# List all classes in the schema
 [group("schema")]
-show-schema-classes:
+list-classes:
     yq '.classes.* | key' information_models/{{ filename }}.schema.linkml.yml
 
-# Show definition of given class
+# Show definition of the class identified by the provided CURIE
 [group("schema")]
-get-def curie:
+get-definition curie:
     yq '.classes.* | select(.class_uri == "{{ '{{curie}}' }}")' information_models/{{ filename }}.schema.linkml.yml
 
 # Release new major version

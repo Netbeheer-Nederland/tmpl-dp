@@ -18,7 +18,7 @@ initialize:
 
     poetry install
 
-    echo -e "\tCreating and configuring repository on GitHub…"
+    echo "Creating and configuring repository on GitHub…"
 
     gh repo create {{ org }}/{{ name }} \
         --description {{ description | default("…", true) | tojson }} \
@@ -33,7 +33,7 @@ initialize:
     git commit -m "Initial commit"
     git push -u origin main
 
-    echo -e "\tCreate `docs` and `docs-dev` branches for storing documentation artifacts…"
+    echo "Create `docs` and `docs-dev` branches for storing documentation artifacts…"
     git checkout --orphan docs
     git rm -rf .
     git add .
@@ -47,7 +47,7 @@ initialize:
     git commit --allow-empty -m "Initial commit"
     git push -u origin docs-dev
 
-    echo -e "\tCreating `v0` major version branch…"
+    echo "Creating `v0` major version branch…"
     git checkout main
     git checkout -b v0
     git push -u origin v0
@@ -59,7 +59,7 @@ initialize:
     # TODO: Enable this only as soon as you've managed to make an exception
     # for the CI/CD, which obviously ought to be able to write.
     #
-    #echo -e "\tAdding ruleset to protect documentation branches…"
+    #echo "Adding ruleset to protect documentation branches…"
     #echo -en "\t"
     #gh api \
     #    --method POST \
@@ -70,8 +70,7 @@ initialize:
     #@echo "… OK."
     #@echo
 
-    echo "\tAdding ruleset to protect major branches…"
-    echo -en "\t"
+    echo "Adding ruleset to protect major branches…"
     gh api \
         --method POST \
         -H "Accept: application/vnd.github+json" \

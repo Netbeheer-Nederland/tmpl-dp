@@ -48,7 +48,8 @@ initialize:
 
     gh repo create {{ org }}/{{ name }} \
         --description {{ description | default("…", true) | tojson }} \
-        --public
+        --public \
+        --disable-wiki
 
     git init -b main
 

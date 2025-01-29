@@ -15,6 +15,7 @@ _default:
 initialize:
     #!/bin/env bash
     echo "Initializing project…"
+    echo
 
     poetry install
 
@@ -87,8 +88,7 @@ initialize:
     #  /repos/{{ org }}/{{ name }}/actions/permissions \
     #   -F "enabled=true" -f "allowed_actions=all"
 
-    @echo -n "… "
-    @echo "OK."
+    @echo "… OK."
     @echo
     echo "A GitHub repository has been created and configured at: https://github.com/{{ org }}/{{ name}}"
     @echo
@@ -97,50 +97,52 @@ initialize:
 [group("project")]
 build: clean _post-process-linkml-schema generate-json-schema generate-documentation generate-example-data validate-example-data
     @echo "Building project…"
+    @echo
     cp -r "artifacts/information_models" "artifacts/documentation/modules/schema/attachments/"
-    @echo -en "\t"
     cp -r "artifacts/schemas" "artifacts/documentation/modules/schema/attachments/"
-    @echo -en "\t"
     cp -r "artifacts/examples" "artifacts/documentation/modules/schema/"
-    @echo -n "… "
-    @echo "OK."
+    @echo "… OK."
+    @echo
+    echo "All project artifacts have been generated and post-processed, and can found in: artifacts/"
+    @echo
 
 # Post-process LinkML schema for preview or releasing
 [group("generators")]
 _post-process-linkml-schema:
+    @echo "Copying source files to artifacts directory…"
     mkdir -p "artifacts/information_models"
     cp "information_models/{{ filename }}.schema.linkml.yml" "artifacts/information_models/"
+    @echo "Setting version in LinkML schema…"
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yml"
     @if [ -z ${VERSION:-} ]; then \
         sed -i "/^name: .*$/a version: {{ '{{shell(ref_name)}}' }}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     else \
         sed -i "/^name: .*$/a version: ${VERSION}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     fi
+    @echo "… OK."
+    @echo
 
 # Generate JSON Schema
 [group("generators")]
 generate-json-schema: _post-process-linkml-schema
     @echo "Generating JSON Schema…"
-    @echo -en "\t"
+    @echo
     mkdir -p "artifacts/schemas/json_schema"
-    @echo -en "\t"
     poetry run gen-json-schema \
         --not-closed \
         "artifacts/information_models/{{ filename }}.schema.linkml.yml" \
         > "artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
-    @echo -n "… "
-    @echo "OK."
+    @echo "… OK."
     @echo
-    @echo -e "Generated JSON Schema at: artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
+    @echo "Generated JSON Schema at: artifacts/schemas/json_schema/{{ filename }}.json_schema.json"
     @echo
 
 # Generate example data
 [group("generators")]
 generate-example-data: _post-process-linkml-schema
     @echo "Generating JSON example data…"
-    @echo -en "\t"
+    @echo
     mkdir -p "artifacts/examples"
-    @echo -en "\t"
     for example_file in examples/*.yml; do \
         [ -f "$example_file" ] || continue; \
         poetry run gen-linkml-profile  \
@@ -148,8 +150,7 @@ generate-example-data: _post-process-linkml-schema
             "$example_file" \
             --out "artifacts/${example_file%.*}.json"; \
     done
-    @echo -n "… "
-    @echo "OK."
+    @echo "… OK."
     @echo
     @echo -e "Generated example JSON data at: artifacts/examples"
     @echo
@@ -158,30 +159,26 @@ generate-example-data: _post-process-linkml-schema
 [group("validate")]
 validate-example-data: generate-json-schema generate-example-data
     @echo "Validating example data against JSON schema…"
-    @echo -en "\t"
+    @echo
     for example_file in artifacts/examples/*.json; do \
         [ -f "$example_file" ] || continue; \
         poetry run check-jsonschema --schemafile "artifacts/schemas/json_schema/{{ filename }}.json_schema.json" $example_file; \
     done
-    @echo -n "… "
-    @echo "OK."
+    @echo "… OK."
+    @echo
 
 # Generate documentation
 [group("generators")]
 generate-documentation: _post-process-linkml-schema
     @echo "Generating documentation…"
-    @echo -en "\t"
+    @echo
     cp -r "documentation" "artifacts"
-    @echo -en "\t"
     mkdir -p "artifacts/documentation/modules/schema"
-    @echo -en "\t"
     poetry run python -m linkml_asciidoc_generator.main \
         "artifacts/information_models/{{ filename }}.schema.linkml.yml" \
         "artifacts/documentation/modules/schema"
-    @echo -en "\t"
-    @echo "OK."
-    @echo -en "\t"
     echo "- modules/schema/nav.adoc" >> artifacts/documentation/antora.yml
+    @echo "… OK."
     @echo
     @echo -e "Generated documentation files at: artifacts/documentation"
     @echo
@@ -190,7 +187,7 @@ generate-documentation: _post-process-linkml-schema
 [group("project")]
 clean:
     @echo "Cleaning up generated artifacts…"
-    @echo -e "\tCleaning up: artifacts"
+    @echo
     @if [ -d "artifacts" ]; then \
         rm -rf "artifacts"; \
     fi
@@ -217,7 +214,7 @@ get-definition curie:
 [group("version-control")]
 release-major-version:
     @echo "Releasing new major version…"
-    @echo -en "\t"
+    @echo
     gh workflow run release_major_version.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
@@ -226,7 +223,7 @@ release-major-version:
 [group("version-control")]
 release-minor-version:
     @echo "Releasing new minor version…"
-    @echo -en "\t"
+    @echo
     gh workflow run release_minor_version.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
@@ -235,7 +232,7 @@ release-minor-version:
 [group("version-control")]
 release-patch-version:
     @echo "Releasing new patch version…"
-    @echo -en "\t"
+    @echo
     gh workflow run release_patch_version.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
@@ -244,7 +241,7 @@ release-patch-version:
 [group("version-control")]
 preview-version:
     @echo "Generating preview of version…"
-    @echo -en "\t"
+    @echo
     gh workflow run preview_release.yml --ref {{ '{{shell(ref_name)}}' }}
     @echo "… OK."
     @echo
@@ -256,31 +253,27 @@ create-draft:
     major_branch=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
 
     echo "Creating new draft…"
-    echo -en "\t"
+    echo
     echo "What would you like to name your draft?"
-    echo -en "\t"
-
     read draft_name
     draft_branch_name=$major_branch.$draft_name
 
     echo "Creating and tracking new draft branch \`$draft_branch_name\`…"
-    echo -en "\t"
     git checkout -b $draft_branch_name
     git commit --allow-empty -m "Start working on draft"
     git push -u origin $draft_branch_name
 
     echo "Creating new draft pull request…"
-    echo -en "\t"
     gh pr create --base $major_branch --draft --editor
+    @echo "… OK."
+    @echo
 
 # Finish draft
 [group("version-control")]
 finish-draft:
     @echo "Finishing draft…"
-    @echo -en "\t"
+    @echo
     @echo "Marking draft pull request as ready for review…"
-    @echo -en "\t"
     gh pr ready
-    @echo -n "… "
-    @echo "OK."
+    @echo "… OK."
     @echo

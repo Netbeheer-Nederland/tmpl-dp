@@ -183,6 +183,7 @@ create-draft:
     echo "Creating and tracking new draft branch \`$draft_branch_name\`…"
     echo -en "\t"
     git checkout -b $draft_branch_name
+    git commit --allow-empty -m "Start working on draft"
     git push -u origin $draft_branch_name
 
     echo "Creating new draft pull request…"

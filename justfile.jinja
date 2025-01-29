@@ -8,7 +8,7 @@ set windows-shell := ["bash", "-uc"]
 ref_name := "git rev-parse --abbrev-ref HEAD"
 
 _default:
-    @just --list --justfile {{ '{{justfile()}}' }}
+    @just --list --unsorted --justfile {{ '{{justfile()}}' }}
 
 # Initialize project
 [group("project")]
@@ -34,7 +34,7 @@ initialize:
     git commit -m "Initial commit"
     git push -u origin main
 
-    echo "Create `docs` and `docs-dev` branches for storing documentation artifacts…"
+    echo 'Create `docs` and `docs-dev` branches for storing documentation artifacts…'
     git checkout --orphan docs
     git rm -rf .
     git add .
@@ -48,7 +48,7 @@ initialize:
     git commit --allow-empty -m "Initial commit"
     git push -u origin docs-dev
 
-    echo "Creating `v0` major version branch…"
+    echo 'Creating `v0` major version branch…'
     git checkout main
     git checkout -b v0
     git push -u origin v0
@@ -88,10 +88,10 @@ initialize:
     #  /repos/{{ org }}/{{ name }}/actions/permissions \
     #   -F "enabled=true" -f "allowed_actions=all"
 
-    @echo "… OK."
-    @echo
+    echo "… OK."
+    echo
     echo "A GitHub repository has been created and configured at: https://github.com/{{ org }}/{{ name}}"
-    @echo
+    echo
 
 # Build the project
 [group("project")]

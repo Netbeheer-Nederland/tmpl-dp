@@ -73,7 +73,7 @@ generate-example-data: _post-process-linkml-schema
 validate-example-data: generate-json-schema generate-example-data
     @echo "Validating example data against JSON schema…"
     @echo -en "\t"
-    poetry run check-jsonschema --schemafile "artifacts/information_models/{{ filename }}.schema.linkml.yml" "artifacts/examples/*.json"
+    poetry run check-jsonschema --schemafile "artifacts/schemas/json_schema/{{ filename }}.json_schema.json" artifacts/examples/*.json
     @echo -n "… "
     @echo "OK."
 

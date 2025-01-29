@@ -34,7 +34,7 @@ jobs:
           git checkout docs-dev
 
           if [ -d "${{ github.ref_name }}" ]; then
-              rm -rf "${{ github.ref_name }}"
+              git rm -rf "${{ github.ref_name }}"
           fi
 
           sed -i '/^version: .*$/d' artifacts/documentation/antora.yml

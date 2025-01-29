@@ -200,9 +200,15 @@ preview-version:
     @echo "… OK."
     @echo
 
+# Check if currently checked out branch is a major version branch
+_on-major-branch:
+    @if [ ! {{ '{{shell(ref_name)}}' }} == {{ '{{shell(major_branch_name)}}' }}  ]; then \
+        error("Releases can only be done from major branches. Please check out the major branch you wish to release from."); \
+    fi
+
 # Release new major version
 [group("version-control")]
-release-major-version:
+release-major-version: _on-major-branch
     @echo "Releasing new major version…"
     @echo
     gh workflow run release_major_version.yml --ref {{ '{{shell(ref_name)}}' }}
@@ -211,7 +217,7 @@ release-major-version:
 
 # Release new minor version
 [group("version-control")]
-release-minor-version:
+release-minor-version: _on-major-branch
     @echo "Releasing new minor version…"
     @echo
     gh workflow run release_minor_version.yml --ref {{ '{{shell(ref_name)}}' }}
@@ -220,7 +226,7 @@ release-minor-version:
 
 # Release new patch version
 [group("version-control")]
-release-patch-version:
+release-patch-version: _on-major-branch
     @echo "Releasing new patch version…"
     @echo
     gh workflow run release_patch_version.yml --ref {{ '{{shell(ref_name)}}' }}

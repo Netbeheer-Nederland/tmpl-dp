@@ -202,8 +202,11 @@ preview-version:
 
 # Check if currently checked out branch is a major version branch
 _on-major-branch:
+    @echo "Checking if currently checked out branch is a major version branch…"
+    @echo
     @if [ ! {{ '{{shell(ref_name)}}' }} == {{ '{{shell(major_branch_name)}}' }}  ]; then \
-        error("Releases can only be done from major branches. Please check out the major branch you wish to release from."); \
+        echo "Releases can only be done from major branches. Please check out the major branch you wish to release from."; \
+        exit 1; \
     fi
 
 # Release new major version

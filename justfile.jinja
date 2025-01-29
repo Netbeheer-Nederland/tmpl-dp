@@ -15,7 +15,8 @@ build: clean _post-process-linkml-schema generate-json-schema generate-documenta
     cp -r "artifacts/information_models" "artifacts/documentation/modules/information-models/attachments/"
     @echo -en "\t"
     cp -r "artifacts/schemas" "artifacts/documentation/modules/information-models/attachments/"
-    cp artifacts/examples/* "artifacts/documentation/modules/information-models/examples/"
+    @echo -en "\t"
+    cp -r "artifacts/examples" "artifacts/documentation/modules/information-models/"
     @echo -n "… "
     @echo "OK."
 

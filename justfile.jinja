@@ -97,7 +97,7 @@ generate-documentation: _post-process-linkml-schema
     @echo "OK."
     @echo -en "\t"
     echo "- modules/schema/nav.adoc" >> artifacts/documentation/antora.yml
-    echo 
+    @echo
     @echo -e "Generated documentation files at: artifacts/documentation"
     @echo
 
@@ -163,3 +163,38 @@ preview-version:
     gh workflow run preview_release.yml --ref $(git rev-parse --abbrev-ref HEAD)
     @echo "… OK."
     @echo
+
+# Create new draft
+[group("vcs")]
+create-draft:
+    #!/bin/bash
+    MAJOR_BRANCH=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
+
+    echo "Creating new draft…"
+    echo -en "\t"
+    echo "What would you like to name your draft?"
+    echo -en "\t"
+    read DRAFT_NAME
+    DRAFT_BRANCH_NAME=$MAJOR_BRANCH.$DRAFT_NAME
+
+    echo "Creating and tracking new draft branch \`$DRAFT_BRANCH_NAME\`…"
+    echo -en "\t"
+    git checkout -b $DRAFT_BRANCH_NAME
+    git push -u origin $DRAFT_BRANCH_NAME
+
+    echo "Creating new draft pull request…"
+    echo -en "\t"
+    gh pr create --base $MAJOR_BRANCH --draft --editor
+
+# Finish draft
+[group("vcs")]
+finish-draft:
+    #!/bin/bash
+    DRAFT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    MAJOR_BRANCH=$(echo $DRAFT_BRANCH | cut -d . -f 1)
+
+    echo "Finishing draft…"
+    echo -en "\t"
+    echo "Marking draft pull request as ready for review…"
+    echo -en "\t"
+    gh pr ready

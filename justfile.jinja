@@ -15,8 +15,7 @@ build: clean _post-process-linkml-schema generate-json-schema generate-documenta
     cp -r "artifacts/information_models" "artifacts/documentation/modules/information-models/attachments/"
     @echo -en "\t"
     cp -r "artifacts/schemas" "artifacts/documentation/modules/information-models/attachments/"
-    @echo -n "… "
-    cp "artifacts/examples/*" "artifacts/documentation/modules/information-models/examples/"
+    cp artifacts/examples/* "artifacts/documentation/modules/information-models/examples/"
     @echo -n "… "
     @echo "OK."
 
@@ -56,7 +55,8 @@ generate-example-data: _post-process-linkml-schema
     @echo -en "\t"
     mkdir -p "artifacts/examples"
     @echo -en "\t"
-    @for example_file in examples/*.yml; do \
+    for example_file in examples/*.yml; do \
+        [ -f "$example_file" ] || continue; \
         poetry run gen-linkml-profile  \
             convert \
             "$example_file" \
@@ -73,7 +73,10 @@ generate-example-data: _post-process-linkml-schema
 validate-example-data: generate-json-schema generate-example-data
     @echo "Validating example data against JSON schema…"
     @echo -en "\t"
-    poetry run check-jsonschema --schemafile "artifacts/schemas/json_schema/{{ filename }}.json_schema.json" artifacts/examples/*.json
+    for example_file in artifacts/examples/*.json; do \
+        [ -f "$example_file" ] || continue; \
+        poetry run check-jsonschema --schemafile "artifacts/schemas/json_schema/{{ filename }}.json_schema.json" $example_file; \
+    done
     @echo -n "… "
     @echo "OK."
 

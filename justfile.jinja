@@ -10,13 +10,15 @@ ref_name := "git rev-parse --abbrev-ref HEAD"
 _default:
     @just --list --justfile {{ '{{justfile()}}' }}
 
-alias init := initialize
-
 # Initialize project
-initialize:
+[group("general")]
+initialize-project:
     #!/bin/env bash
+    echo "Initializing project…"
 
     poetry install
+
+    echo -e "\tCreating and configuring repository on GitHub…"
 
     gh repo create {{ org }}/{{ name }} \
         --description {{ description | default("…", true) | tojson }} \
@@ -31,6 +33,7 @@ initialize:
     git commit -m "Initial commit"
     git push -u origin main
 
+    echo -e "\tCreate `docs` and `docs-dev` branches for storing documentation artifacts…"
     git checkout --orphan docs
     git rm -rf .
     git add .
@@ -44,6 +47,7 @@ initialize:
     git commit --allow-empty -m "Initial commit"
     git push -u origin docs-dev
 
+    echo -e "\tCreating `v0` major version branch…"
     git checkout main
     git checkout -b v0
     git push -u origin v0
@@ -55,7 +59,7 @@ initialize:
     # TODO: Enable this only as soon as you've managed to make an exception
     # for the CI/CD, which obviously ought to be able to write.
     #
-    #echo "Adding ruleset to protect documentation branches…"
+    #echo -e "\tAdding ruleset to protect documentation branches…"
     #echo -en "\t"
     #gh api \
     #    --method POST \
@@ -66,7 +70,7 @@ initialize:
     #@echo "… OK."
     #@echo
 
-    echo "Adding ruleset to protect major branches…"
+    echo "\tAdding ruleset to protect major branches…"
     echo -en "\t"
     gh api \
         --method POST \
@@ -74,10 +78,6 @@ initialize:
         -H "X-GitHub-Api-Version: 2022-11-28" \
         /repos/{{ org }}/$(basename `git config --get remote.origin.url` | cut -d . -f -1)/rulesets \
         --input ".github/rulesets/protect-major-branches.json"
-    echo "… OK."
-    echo
-
-    echo "A GitHub repository has been created and configured at: https://github.com/{{ org }}/{{ name}}"
 
     # Set workflow permissions
 
@@ -88,10 +88,16 @@ initialize:
     #  /repos/{{ org }}/{{ name }}/actions/permissions \
     #   -F "enabled=true" -f "allowed_actions=all"
 
+    @echo -n "… "
+    @echo "OK."
+    @echo
+    echo "A GitHub repository has been created and configured at: https://github.com/{{ org }}/{{ name}}"
+    @echo
+
 # Build the project
+[group("general")]
 build: clean _post-process-linkml-schema generate-json-schema generate-documentation generate-example-data validate-example-data
     @echo "Building project…"
-    @echo -en "\t"
     cp -r "artifacts/information_models" "artifacts/documentation/modules/schema/attachments/"
     @echo -en "\t"
     cp -r "artifacts/schemas" "artifacts/documentation/modules/schema/attachments/"
@@ -182,7 +188,7 @@ generate-documentation: _post-process-linkml-schema
     @echo
 
 # Clean up the output directory
-[group("generation")]
+[group("general")]
 clean:
     @echo "Cleaning up generated artifacts…"
     @echo -e "\tCleaning up: artifacts"

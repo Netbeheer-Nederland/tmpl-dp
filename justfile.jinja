@@ -5,8 +5,10 @@ set windows-shell := ["bash", "-uc"]
 
 {% set filename = name | replace("-", "_") %}
 
+ref_name := `git rev-parse --abbrev-ref HEAD`
+
 _default:
-    @just --list --justfile {{ '{{ justfile() }}' }}
+    @just --list --justfile {{ '{{justfile()}}' }}
 
 # Generate all artifacts
 [group("generation")]
@@ -27,7 +29,7 @@ _post-process-linkml-schema:
     cp "information_models/{{ filename }}.schema.linkml.yml" "artifacts/information_models/"
     sed -i '/^version: .*$/d' "artifacts/information_models/{{ filename }}.schema.linkml.yml"
     @if [ -z ${VERSION:-} ]; then \
-        sed -i "/^name: .*$/a version: $(git rev-parse --abbrev-ref HEAD)" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
+        sed -i "/^name: .*$/a version: {{ '{{ref_name}}' }}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     else \
         sed -i "/^name: .*$/a version: ${VERSION}" "artifacts/information_models/{{ filename }}.schema.linkml.yml"; \
     fi
@@ -133,7 +135,7 @@ get-def curie:
 release-major-version:
     @echo "Releasing new major version…"
     @echo -en "\t"
-    gh workflow run release_major_version.yml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run release_major_version.yml --ref {{ '{{ref_name}}' }}
     @echo "… OK."
     @echo
 
@@ -142,7 +144,7 @@ release-major-version:
 release-minor-version:
     @echo "Releasing new minor version…"
     @echo -en "\t"
-    gh workflow run release_minor_version.yml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run release_minor_version.yml --ref {{ '{{ref_name}}' }}
     @echo "… OK."
     @echo
 
@@ -151,7 +153,7 @@ release-minor-version:
 release-patch-version:
     @echo "Releasing new patch version…"
     @echo -en "\t"
-    gh workflow run release_patch_version.yml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run release_patch_version.yml --ref {{ '{{ref_name}}' }}
     @echo "… OK."
     @echo
 
@@ -160,7 +162,7 @@ release-patch-version:
 preview-version:
     @echo "Generating preview of version…"
     @echo -en "\t"
-    gh workflow run preview_release.yml --ref $(git rev-parse --abbrev-ref HEAD)
+    gh workflow run preview_release.yml --ref {{ '{{ref_name}}' }}
     @echo "… OK."
     @echo
 
@@ -168,33 +170,33 @@ preview-version:
 [group("vcs")]
 create-draft:
     #!/bin/bash
-    MAJOR_BRANCH=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
+    major_branch=$(git rev-parse --abbrev-ref HEAD | cut -d . -f 1)
 
     echo "Creating new draft…"
     echo -en "\t"
     echo "What would you like to name your draft?"
     echo -en "\t"
-    read DRAFT_NAME
-    DRAFT_BRANCH_NAME=$MAJOR_BRANCH.$DRAFT_NAME
 
-    echo "Creating and tracking new draft branch \`$DRAFT_BRANCH_NAME\`…"
+    read draft_name
+    draft_branch_name=$major_branch.$draft_name
+
+    echo "Creating and tracking new draft branch \`$draft_branch_name\`…"
     echo -en "\t"
-    git checkout -b $DRAFT_BRANCH_NAME
-    git push -u origin $DRAFT_BRANCH_NAME
+    git checkout -b $draft_branch_name
+    git push -u origin $draft_branch_name
 
     echo "Creating new draft pull request…"
     echo -en "\t"
-    gh pr create --base $MAJOR_BRANCH --draft --editor
+    gh pr create --base $major_branch --draft --editor
 
 # Finish draft
 [group("vcs")]
 finish-draft:
-    #!/bin/bash
-    DRAFT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    MAJOR_BRANCH=$(echo $DRAFT_BRANCH | cut -d . -f 1)
-
-    echo "Finishing draft…"
-    echo -en "\t"
-    echo "Marking draft pull request as ready for review…"
-    echo -en "\t"
+    @echo "Finishing draft…"
+    @echo -en "\t"
+    @echo "Marking draft pull request as ready for review…"
+    @echo -en "\t"
     gh pr ready
+    @echo -n "… "
+    @echo "OK."
+    @echo

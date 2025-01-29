@@ -44,7 +44,9 @@ initialize:
 
     poetry install
 
+    echo
     echo "Creating and configuring repository on GitHub…"
+    echo
 
     gh repo create {{ org }}/{{ name }} \
         --description {{ description | default("…", true) | tojson }} \
@@ -60,7 +62,9 @@ initialize:
     git commit -m "Initial commit"
     git push -u origin main
 
+    echo
     echo 'Create `docs` and `docs-dev` branches for storing documentation artifacts…'
+    echo
     git checkout --orphan docs
     git rm -rf .
     git add .
@@ -74,7 +78,9 @@ initialize:
     git commit --allow-empty -m "Initial commit"
     git push -u origin docs-dev
 
+    echo
     echo 'Creating `v0` major version branch…'
+    echo
     git checkout main
     git checkout -b v0
     git push -u origin v0
@@ -97,7 +103,9 @@ initialize:
     #@echo "… OK."
     #@echo
 
+    echo
     echo "Adding ruleset to protect major branches…"
+    echo
     gh api \
         --method POST \
         -H "Accept: application/vnd.github+json" \

@@ -19,7 +19,7 @@ build: clean _post-process-linkml-schema generate-json-schema generate-documenta
     @echo
     cp -r "artifacts/information_models" "artifacts/documentation/modules/schema/attachments/"
     cp -r "artifacts/schemas" "artifacts/documentation/modules/schema/attachments/"
-    cp -r "artifacts/examples" "artifacts/documentation/modules/schema/"
+    cp -r "artifacts/examples" "artifacts/documentation/modules/schema/attachments/"
     @echo "… OK."
     @echo
     @echo "All project artifacts have been generated and post-processed, and can found in: artifacts/"

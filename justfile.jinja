@@ -176,7 +176,7 @@ create-draft name:
     @echo
     @echo "Creating new draft pull request…"
     @echo
-    gh pr create --base {{ '{{shell(major_branch_name)}}' }} --draft --editor
+    gh pr create --base {{ '{{shell(major_branch_name)}}' }} --draft
     @echo "… OK."
     @echo
 

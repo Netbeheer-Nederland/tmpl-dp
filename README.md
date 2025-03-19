@@ -19,7 +19,7 @@ $ copier copy --trust gh:Netbeheer-Nederland/tmpl-dp dp-name-of-data-product
 
 Copier will ask you for some information and store the answers in a file used to set project variables.
 
-Once it's done, you can run `just init-project` to:
+Once it's done, you can run `just initialize` to:
 
 * Create a local Git repository
 * Create a remote GitHub repository
